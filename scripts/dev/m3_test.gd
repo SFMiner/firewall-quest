@@ -12,6 +12,7 @@ var _skill_used: bool = false
 func _ready() -> void:
 	await _test_attack_win()
 	await _test_skill_win()
+	_test_mp_cost_felt()
 	_test_rewards_and_levelup()
 	_test_defeat_respawn()
 	_test_boss_firewall()
@@ -55,6 +56,23 @@ func _test_skill_win() -> void:
 	var result: String = await sys.combat_ended
 	_check("skill battle won", result == "victory")
 	_check("MP was spent (< 10)", combatant.mp < 10)
+	sys.queue_free()
+
+
+func _test_mp_cost_felt() -> void:
+	print("- skill MP cost is felt (no same-round refund)")
+	var sys: CombatSystem = CombatSystem.new()
+	add_child(sys)
+	var c: Combatant = Combatant.from_player(PlayerState.create("Mage", "mage"))
+	c.mp = 10
+	sys.party = [c]
+	sys.enemies = []
+	c.spend_mp(3)
+	_check("MP drops by full cost (10->7)", c.mp == 7)
+	sys._end_of_round()
+	_check("no refund on the cast round (still 7)", c.mp == 7)
+	sys._end_of_round()
+	_check("regen on a non-cast round (7->9)", c.mp == 9)
 	sys.queue_free()
 
 

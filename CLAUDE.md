@@ -75,8 +75,23 @@ five autoload stubs, Dialogue Manager + PANEL balloon, LPC tooling, Main/MainMen
   `res://supabase.cfg` (url + publishable key). Realtime = polling (no WebSocket; GH-Pages-safe).
   Methods: create/get/join/update/delete room, push/pull save, fetch/upload mod.
 - Schema applied (rooms/player_saves/mods/mod_reports) + saved as a migration in the supabase project.
-- TODO: room lobby UI (host/join by code, enable Join Code button), shared-world presence (players see
-  each other via polling), shared party combat + 30s timer/AFK→Defend→AI + disconnect handling.
+- **Lobby DONE** (`scenes/dev/M6LobbyTest.tscn`, 12/12 vs live backend): `PartyManager` rewritten with
+  `host_room`/`join_room`/`start_game`/`leave_room` + 1s polling that mirrors the room's `game_state`
+  and emits `party_changed`/`room_started`/`room_closed`. Main-menu **Host Co-op / Join Co-op** (disabled
+  if Supabase unconfigured) → `CharacterCreation` → `Lobby` (4-char code, live player list, host Start) →
+  shared explore. `JoinDialog` for entering codes. Concurrency note: presence writes are read-modify-write
+  on `game_state.players` (last-write-wins) — fine for small lobbies; revisit if races show up.
+- **Shared world (Layer 1) DONE** (`M6PresenceTest`, 7/7 vs live backend): PartyManager presence is
+  read-modify-write on `game_state.players` (each poll re-reads then writes only our own slot to minimise
+  clobber); each slot carries the full PlayerState dict + pos + zone + heartbeat `t`. Heartbeat older than
+  DISCONNECT_TIMEOUT (6s) = offline. ExploreScene spawns/lerps **remote-player avatars** (LPC sprite +
+  name) for others in the same zone, writes local presence each frame, and syncs **shared firewall power**
+  (host pushes on change via `host_set`; guests adopt via `world_state_changed` → `GameManager.adopt_firewall_power`).
+- TODO (Layer 2 — full shared party combat, host-authoritative): combatant `owner_id`, serialize combat
+  to `game_state.combat`, host runs the loop + relays remote actions, guests view + submit, 30s timer →
+  Defend → AI, disconnect → AI, boss HP scales with party size.
+- **Testing co-op:** run two instances on this machine (local Supabase binds 0.0.0.0). Verifiable from one
+  instance: connectivity, lobby, presence-data. Needs your 2-client playtest: live avatars + combat feel.
 - **Reality:** local Supabase only reaches this machine; real co-op needs a hosted instance + rebuild.
 
 **Milestone 8 — DONE (polish pass; multiplayer M6 + mods M7 still pending).** All regression suites

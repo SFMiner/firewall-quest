@@ -35,6 +35,9 @@ var player_state: PlayerState = null
 ## (movement, interaction) must early-return while this is set.
 var ui_blocking: bool = false
 
+## True to suppress roaming enemy encounters (e.g. during the Hall Monitor lure puzzle).
+var encounters_paused: bool = false
+
 
 ## Reduce firewall power by one boss-worth (clamped 0–100) and fire signals.
 func defeat_firewall_boss(boss_id: String) -> void:
@@ -68,6 +71,16 @@ func set_flag(flag: String, value: bool = true) -> void:
 
 func get_flag(flag: String) -> bool:
 	return flags.get(flag, false)
+
+
+## Adopt a firewall value pushed by the host (multiplayer guests). Emits the
+## change signal so the HUD/filter react, without re-running defeat logic.
+func adopt_firewall_power(value: int) -> void:
+	if value == firewall_power:
+		return
+	var old_value: int = firewall_power
+	firewall_power = value
+	firewall_power_changed.emit(firewall_power, old_value)
 
 
 ## Restore world + player state from a loaded (flat) save dict.

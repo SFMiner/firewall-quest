@@ -15,6 +15,14 @@ signal _action_submitted()
 
 const STANDARD_MP_REGEN: int = 2
 const FLEE_CHANCE: float = 0.6
+## Even against a wall of DEF, an attack lands at least this fraction of its PWR,
+## so flat DEF can soften hits but never trivialize a strong attacker.
+const DAMAGE_FLOOR_FRACTION: float = 0.30
+
+
+## Basic-attack damage: PWR minus DEF, but never below DAMAGE_FLOOR_FRACTION of PWR.
+static func attack_damage(pwr: int, def: int) -> int:
+	return maxi(maxi(1, int(round(pwr * DAMAGE_FLOOR_FRACTION))), pwr - def)
 
 var party: Array[Combatant] = []
 var enemies: Array[Combatant] = []
@@ -78,7 +86,10 @@ func _end_of_round() -> void:
 	for c: Combatant in _all():
 		if not c.is_alive():
 			continue
-		c.restore_mp(STANDARD_MP_REGEN)
+		# Passive MP recovery only on rounds you didn't cast (so a skill's cost is felt).
+		if not c.spent_mp_this_round:
+			c.restore_mp(STANDARD_MP_REGEN)
+		c.spent_mp_this_round = false
 		for line: String in c.tick_statuses():
 			combat_log.emit(line)
 	_check_end()
@@ -110,7 +121,7 @@ func _do_attack(actor: Combatant, target: Combatant) -> void:
 	if target.behavior == "phase" and randf() < 0.4:
 		combat_log.emit("%s flickers out of reach — the attack finds nothing." % target.display_name)
 		return
-	var raw: int = maxi(1, actor.eff("pwr") - target.eff("def"))
+	var raw: int = attack_damage(actor.eff("pwr"), target.eff("def"))
 	if target.defending:
 		raw = maxi(1, int(ceil(raw / 2.0)))
 	var dealt: int = target.take_damage(raw)

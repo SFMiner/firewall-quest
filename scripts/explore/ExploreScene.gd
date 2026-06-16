@@ -36,11 +36,15 @@ var _film: ColorRect
 var _merchant: NPC = null
 var _escort_dest: POI = null
 var _escorting: bool = false
+var _lure_active: bool = false
+var _remote_root: Node2D = null
+var _remote_avatars: Dictionary = {}  # player id -> Node2D
 
 @onready var _world: Node2D = $World
 
 
 func _ready() -> void:
+	GameManager.encounters_paused = false  # clean state per zone (lure puzzle re-pauses)
 	var zone_id: String = GameManager.current_zone
 	zone = DataLoader.get_zone(zone_id)
 	_build_ground()
@@ -51,6 +55,66 @@ func _ready() -> void:
 	GameManager.firewall_power_changed.connect(_on_firewall_changed)
 	Quests.quest_updated.connect(_on_quest_updated)
 	Audio.play_music("explore")
+	if PartyManager.is_multiplayer:
+		_setup_multiplayer()
+
+
+# === Multiplayer presence (Layer 1) ===
+func _setup_multiplayer() -> void:
+	_remote_root = Node2D.new()
+	_remote_root.name = "RemotePlayers"
+	_remote_root.y_sort_enabled = true
+	_world.add_child(_remote_root)
+	PartyManager.party_changed.connect(_sync_remote_avatars)
+	PartyManager.world_state_changed.connect(_on_world_synced)
+	_sync_remote_avatars()
+
+
+# Guests adopt the host's shared firewall power (and follow zone changes elsewhere).
+func _on_world_synced() -> void:
+	if not PartyManager.is_host:
+		GameManager.adopt_firewall_power(int(PartyManager.game_state.get("firewall_power", GameManager.firewall_power)))
+
+
+func _sync_remote_avatars() -> void:
+	if _remote_root == null:
+		return
+	var present: Dictionary = {}
+	for m: Dictionary in PartyManager.remote_players_in_zone(zone.id):
+		present[m.id] = true
+		var av: Node2D = _remote_avatars.get(m.id)
+		if av == null:
+			av = _make_remote_avatar(m)
+			_remote_avatars[m.id] = av
+			_remote_root.add_child(av)
+		av.set_meta("target", m.pos)
+	for id: String in _remote_avatars.keys():
+		if not present.has(id):
+			_remote_avatars[id].queue_free()
+			_remote_avatars.erase(id)
+
+
+func _make_remote_avatar(m: Dictionary) -> Node2D:
+	var node: Node2D = Node2D.new()
+	node.position = m.pos
+	node.set_meta("target", m.pos)
+	var spr: AnimatedSprite2D = AnimatedSprite2D.new()
+	spr.position = Vector2(0, -18)
+	var frames: SpriteFrames = LPCFrames.build(m.get("class", "fighter"))
+	if frames.get_animation_names().size() > 0 and frames.has_animation("idle_down"):
+		spr.sprite_frames = frames
+		spr.play("idle_down")
+	node.add_child(spr)
+	var tag: Label = Label.new()
+	tag.text = m.get("name", "Player")
+	tag.position = Vector2(-70, -56)
+	tag.size = Vector2(140, 18)
+	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tag.add_theme_font_size_override("font_size", 12)
+	tag.add_theme_color_override("font_outline_color", Color.BLACK)
+	tag.add_theme_constant_override("outline_size", 4)
+	node.add_child(tag)
+	return node
 
 
 # Toast quest start/completion so quests register, and run the merchant escort.
@@ -78,6 +142,11 @@ func _process(delta: float) -> void:
 	if _escorting and is_instance_valid(_merchant) and player != null and not GameManager.ui_blocking:
 		var trail: Vector2 = player.global_position + Vector2(0, 36)
 		_merchant.global_position = _merchant.global_position.move_toward(trail, 95.0 * delta)
+	if PartyManager.is_multiplayer and player != null:
+		PartyManager.set_local_presence(player.global_position, zone.id)
+		for id: String in _remote_avatars:
+			var av: Node2D = _remote_avatars[id]
+			av.position = av.position.move_toward(av.get_meta("target", av.position), 140.0 * delta)
 
 
 func _setup_hud() -> void:
@@ -180,8 +249,11 @@ func _apply_world_state(animate: bool) -> void:
 		_film.color.a = target
 
 
-func _on_firewall_changed(_new_value: int, _old_value: int) -> void:
+func _on_firewall_changed(new_value: int, _old_value: int) -> void:
 	_apply_world_state(true)
+	# Host shares world unlocks with the party.
+	if PartyManager.is_multiplayer and PartyManager.is_host:
+		PartyManager.host_set("firewall_power", new_value)
 
 
 # Buildings, POIs and NPCs for the current zone.
@@ -246,23 +318,40 @@ func _build_server() -> void:
 # Hall Monitor Prime: a chase puzzle. Lead the monitor across all three patrol
 # checkpoints to loop its policy and free it.
 func _spawn_hall_monitor() -> void:
+	_lure_active = true
+	GameManager.encounters_paused = true  # no random fights mid-puzzle
 	var markers: Array[Node2D] = []
 	for pos: Vector2 in [Vector2(300, 300), Vector2(1100, 320), Vector2(700, 820)]:
-		var m: Polygon2D = Polygon2D.new()
-		m.polygon = PackedVector2Array([Vector2(-14, -14), Vector2(14, -14), Vector2(14, 14), Vector2(-14, 14)])
-		m.color = Color(1, 1, 0.4, 0.7)
+		var m: Node2D = Node2D.new()
 		m.position = pos
+		var glyph: Polygon2D = Polygon2D.new()
+		glyph.polygon = PackedVector2Array([Vector2(0, -26), Vector2(22, 0), Vector2(0, 26), Vector2(-22, 0)])
+		glyph.color = Color(1, 1, 0.35, 0.85)
+		m.add_child(glyph)
+		var cap: Label = Label.new()
+		cap.text = "CHECKPOINT"
+		cap.position = Vector2(-70, -56)
+		cap.size = Vector2(140, 18)
+		cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cap.add_theme_font_size_override("font_size", 12)
+		cap.add_theme_color_override("font_outline_color", Color.BLACK)
+		cap.add_theme_constant_override("outline_size", 4)
+		m.add_child(cap)
 		_world.add_child(m)
 		markers.append(m)
 	var monitor: HallMonitor = HallMonitor.new()
-	monitor.position = Vector2(700, 200)
+	monitor.position = Vector2(700, 220)
 	_world.add_child(monitor)
 	monitor.setup(player, markers)
+	monitor.progress.connect(func(lit: int, total: int) -> void:
+		hud.toast("Checkpoint %d / %d looped!" % [lit, total]))
 	monitor.caught.connect(_on_lure_complete.bind(monitor, markers))
-	hud.toast("Lead HALL_MONITOR_PRIME across all three checkpoints to loop its patrol.")
+	hud.toast("HALL_MONITOR_PRIME can't leave its patrol. Lead it over the 3 glowing CHECKPOINTS to loop it!", 4.0)
 
 
 func _on_lure_complete(monitor: Node, markers: Array) -> void:
+	_lure_active = false
+	GameManager.encounters_paused = false
 	for m: Node in markers:
 		m.queue_free()
 	monitor.queue_free()
@@ -296,6 +385,9 @@ func _zone_dialogue_path() -> String:
 func _start_boss_fight() -> void:
 	if zone.boss in GameManager.bosses_defeated:
 		hud.toast("The firmware is off. They're free now.")
+		return
+	if _lure_active:
+		hud.toast("It's already chasing you — lead it over the 3 glowing checkpoints!")
 		return
 	var ed: EnemyDef = DataLoader.get_enemy(zone.boss)
 	GameManager.ui_blocking = true

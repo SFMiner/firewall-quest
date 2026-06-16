@@ -1,0 +1,69 @@
+[gd_scene format=3 uid="uid://bpyxyk171wpk1"]
+
+[ext_resource type="Script" path="res://scripts/ui/JoinDialog.gd" id="1_join"]
+
+[node name="JoinDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_join")
+
+[node name="BG" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.105882, 0.117647, 0.164706, 1)
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -120.0
+offset_right = 200.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "JOIN A CO-OP GAME"
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Enter the 4-letter room code:"
+horizontal_alignment = 1
+
+[node name="CodeEdit" type="LineEdit" parent="Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+placeholder_text = "ABCD"
+
+[node name="ErrorLabel" type="Label" parent="Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="JoinButton" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Join"
+
+[node name="CancelButton" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+text = "Cancel"
+
+[connection signal="pressed" from="Panel/VBox/Buttons/JoinButton" to="." method="_on_join_pressed"]
+[connection signal="pressed" from="Panel/VBox/Buttons/CancelButton" to="." method="_on_cancel_pressed"]

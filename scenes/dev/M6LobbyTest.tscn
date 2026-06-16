@@ -1,0 +1,4 @@
+[gd_scene format=3 uid="uid://b8fwq0m6lob01"]
+[ext_resource type="Script" path="res://scripts/dev/m6_lobby_test.gd" id="1"]
+[node name="M6LobbyTest" type="Node"]
+script = ExtResource("1")

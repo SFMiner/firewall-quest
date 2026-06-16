@@ -1,0 +1,70 @@
+[gd_scene format=3 uid="uid://bpyxym10pj441"]
+
+[ext_resource type="Script" path="res://scripts/ui/Lobby.gd" id="1_lobby"]
+
+[node name="Lobby" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_lobby")
+
+[node name="BG" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.105882, 0.117647, 0.164706, 1)
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -240.0
+offset_top = -200.0
+offset_right = 240.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "CO-OP LOBBY"
+horizontal_alignment = 1
+
+[node name="CodeLabel" type="Label" parent="Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Room Code:  ----"
+horizontal_alignment = 1
+
+[node name="PlayersHeader" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Players:"
+
+[node name="PlayerList" type="VBoxContainer" parent="Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StatusLabel" type="Label" parent="Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+horizontal_alignment = 1
+
+[node name="StartButton" type="Button" parent="Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Start Game"
+
+[node name="LeaveButton" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Leave"
+
+[connection signal="pressed" from="Panel/VBox/StartButton" to="." method="_on_start_pressed"]
+[connection signal="pressed" from="Panel/VBox/LeaveButton" to="." method="_on_leave_pressed"]

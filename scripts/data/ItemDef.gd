@@ -34,6 +34,28 @@ func is_equipment() -> bool:
 	return type == "equipment"
 
 
+## A short, player-facing summary of what this item does (for the shop/inventory).
+func effect_label() -> String:
+	if is_equipment():
+		var parts: Array[String] = []
+		for stat: String in stat_mods:
+			parts.append("+%d %s" % [int(stat_mods[stat]), stat.to_upper()])
+		return ", ".join(parts)
+	match effect.get("kind", ""):
+		"heal":
+			return "Restore %d HP" % int(effect.get("amount", 0))
+		"restore_mp":
+			return "Restore %d MP" % int(effect.get("amount", 0))
+		"cure":
+			return "Cure %s" % str(effect.get("status", "")).capitalize()
+		"flee_guarantee":
+			return "Guaranteed escape"
+		"skip_combat":
+			return "Skip one combat"
+		_:
+			return ""
+
+
 ## True when this item is purchasable at the given firewall power.
 func is_available(firewall_power: int) -> bool:
 	return firewall_power <= unlock_firewall_max

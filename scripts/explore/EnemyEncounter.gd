@@ -17,7 +17,7 @@ func _ready() -> void:
 
 
 func _on_body_entered(body: Node) -> void:
-	if _triggered or not body.is_in_group("player"):
+	if _triggered or GameManager.encounters_paused or not body.is_in_group("player"):
 		return
 	_triggered = true
 	_run()

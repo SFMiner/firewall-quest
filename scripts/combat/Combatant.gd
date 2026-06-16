@@ -32,6 +32,9 @@ var def: int = 0
 var wit: int = 0
 
 var defending: bool = false
+## True if this combatant spent MP this round (suppresses end-of-round regen so a
+## skill's cost is felt, not immediately refunded).
+var spent_mp_this_round: bool = false
 var statuses: Array[Dictionary] = []
 ## Boss-specific scratch state (e.g. {"forms": 5} for VICE_PRINCIPAL).
 var special: Dictionary = {}
@@ -122,6 +125,7 @@ func spend_mp(amount: int) -> bool:
 	if mp < amount:
 		return false
 	mp -= amount
+	spent_mp_this_round = true
 	return true
 
 
@@ -149,6 +153,7 @@ func add_status(status: Dictionary) -> void:
 func tick_statuses() -> Array[String]:
 	var log: Array[String] = []
 	var remaining: Array[Dictionary] = []
+	var recovered_from_disable: bool = false
 	for st: Dictionary in statuses:
 		if st.kind == "poison" and is_alive():
 			var dmg: int = take_damage(int(st.get("amount", 1)))
@@ -157,7 +162,12 @@ func tick_statuses() -> Array[String]:
 		if st.turns > 0:
 			remaining.append(st)
 		else:
+			if st.kind == "stun" or st.kind == "sleep":
+				recovered_from_disable = true
 			log.append("%s's %s wears off." % [display_name, st.get("name", st.kind)])
+	# Briefly immune after recovering, so stun/sleep can't perma-lock.
+	if recovered_from_disable and not has_status("stun_immune"):
+		remaining.append({"kind": "stun_immune", "turns": 2, "name": "Steadied"})
 	statuses = remaining
 	return log
 

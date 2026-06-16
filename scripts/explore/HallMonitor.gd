@@ -1,12 +1,16 @@
 # === HallMonitor.gd ===
-# Zone 3 boss puzzle. Chases the player (a touch slower, so it's lurable). When
-# led across all three patrol checkpoints, its policy loop closes and it's caught.
+# Zone 3 boss puzzle. The Monitor chases the player but keeps a following distance
+# (so it trails, never sticks). Lead it over all three patrol checkpoints to close
+# its policy loop and free it.
 class_name HallMonitor
 extends CharacterBody2D
 
+## Emitted as checkpoints light up (lit, total), and once all are lit.
+signal progress(lit: int, total: int)
 signal caught()
 
-@export var speed: float = 78.0
+@export var speed: float = 92.0
+@export var follow_distance: float = 110.0
 
 var _player: Node2D = null
 var _markers: Array[Node2D] = []
@@ -33,14 +37,20 @@ func setup(player: Node2D, markers: Array[Node2D]) -> void:
 
 func _physics_process(_delta: float) -> void:
 	if _done or _player == null or GameManager.ui_blocking:
+		velocity = Vector2.ZERO
 		return
-	var dir: Vector2 = (_player.global_position - global_position).normalized()
-	velocity = dir * speed
+	# Trail the player at a fixed distance instead of overlapping them.
+	var to_player: Vector2 = _player.global_position - global_position
+	if to_player.length() > follow_distance:
+		velocity = to_player.normalized() * speed
+	else:
+		velocity = Vector2.ZERO
 	move_and_slide()
 	for m: Node2D in _markers:
-		if not _lit.get(m, false) and global_position.distance_to(m.global_position) < 34.0:
+		if not _lit.get(m, false) and global_position.distance_to(m.global_position) < 50.0:
 			_lit[m] = true
-			m.color = Color(0.4, 1.0, 0.4, 0.85)
+			m.modulate = Color(0.4, 1.0, 0.4)
+			progress.emit(_lit.size(), _markers.size())
 			if _lit.size() >= _markers.size():
 				_done = true
 				caught.emit()

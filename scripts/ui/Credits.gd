@@ -26,4 +26,7 @@ func _ready() -> void:
 
 func _on_return_pressed() -> void:
 	GameManager.ui_blocking = false
+	# This layer lives at the tree root (sibling of the game scene), so changing
+	# the scene won't remove it — free it explicitly or it lingers over the menu.
 	get_tree().change_scene_to_file("res://scenes/main/Main.tscn")
+	queue_free()

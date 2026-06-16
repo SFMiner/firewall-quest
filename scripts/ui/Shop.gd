@@ -34,7 +34,8 @@ func _make_row(item: ItemDef) -> HBoxContainer:
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info.clip_text = true  # never push the Buy button off the panel
 	info.tooltip_text = item.description
-	info.text = "%s  —  %d B" % [item.name, item.cost]
+	var fx: String = item.effect_label()
+	info.text = "%s  —  %d B   (%s)" % [item.name, item.cost, fx] if not fx.is_empty() else "%s  —  %d B" % [item.name, item.cost]
 	row.add_child(info)
 	var buy: Button = Button.new()
 	var affordable: bool = _player() != null and _player().bytes >= item.cost

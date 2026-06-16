@@ -95,7 +95,7 @@
 	"admin_9": {
 		"id": "admin_9", "zone": "zone4", "tier": "boss", "xp": 250, "bytes_min": 0, "bytes_max": 0,
 		"firewall_boss": true, "final_boss": true, "phases": ["protocol", "escalation", "override"],
-		"sanitized": { "name": "ADMIN-9", "hp": 80, "pwr": 7, "spd": 5, "def": 5, "behavior": "phased", "sprite": "admin9" },
-		"unlocked": { "name": "ADMIN-9", "hp": 80, "pwr": 7, "spd": 5, "def": 5, "behavior": "phased", "sprite": "admin9" }
+		"sanitized": { "name": "ADMIN-9", "hp": 120, "pwr": 13, "spd": 5, "def": 5, "behavior": "phased", "sprite": "admin9" },
+		"unlocked": { "name": "ADMIN-9", "hp": 120, "pwr": 13, "spd": 5, "def": 5, "behavior": "phased", "sprite": "admin9" }
 	}
 }

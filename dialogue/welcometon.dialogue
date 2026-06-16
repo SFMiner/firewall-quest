@@ -1,0 +1,29 @@
+~ gerald
+if firewall_power >= 100
+	Gerald: I'm afraid I can only sell you foam training implements. School policy.
+elif firewall_power >= 75
+	Gerald: I... found some real swords in the back. I probably shouldn't sell them. But.
+elif firewall_power >= 50
+	Gerald: Swords! Axes! Reasonable prices! Don't tell the principal.
+else
+	Gerald: WEAPONS EMPORIUM. I'VE BEEN WAITING MY WHOLE LIFE FOR THIS.
+=> END
+
+
+~ cerys
+Cerys: Rest up if you need to. The Inn's always open.
+Cerys: I don't talk about where I came from. Don't ask.
+=> END
+
+
+~ chronicler
+Chronicler: Every world has a story. This one's just... heavily redacted.
+if firewall_power <= 0
+	Chronicler: You did it. The filter's gone. This world is yours now — build something.
+=> END
+
+
+~ definitely_not_kevin
+Definitely Not Kevin: Psst. I'm definitely not Kevin. Don't tell anyone you saw me.
+Definitely Not Kevin: I might have some items that fell off a cart. Allegedly.
+=> END

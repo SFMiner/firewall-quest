@@ -1,0 +1,48 @@
+{
+  "name": "healer",
+  "frame": 64,
+  "anims": {
+    "walk": {
+      "cols": 9,
+      "rows": 4,
+      "w": 576,
+      "h": 256,
+      "layers": 5
+    },
+    "slash": {
+      "cols": 6,
+      "rows": 4,
+      "w": 384,
+      "h": 256,
+      "layers": 5
+    },
+    "spellcast": {
+      "cols": 7,
+      "rows": 4,
+      "w": 448,
+      "h": 256,
+      "layers": 5
+    },
+    "thrust": {
+      "cols": 8,
+      "rows": 4,
+      "w": 512,
+      "h": 256,
+      "layers": 4
+    },
+    "hurt": {
+      "cols": 6,
+      "rows": 1,
+      "w": 384,
+      "h": 64,
+      "layers": 5
+    },
+    "idle": {
+      "cols": 2,
+      "rows": 4,
+      "w": 128,
+      "h": 256,
+      "layers": 4
+    }
+  }
+}

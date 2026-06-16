@@ -1,0 +1,11 @@
+{
+	"id": "cerys",
+	"name": "Cerys",
+	"description": "The quiet Welcometon innkeeper.",
+	"font_path": "res://assets/fonts/bainsley/Bainsley-VGgJ6.ttf",
+	"font_bold_path": "res://assets/fonts/bainsley/BainsleyBold-DOpym.ttf",
+	"font_italic_path": "res://assets/fonts/bainsley/BainsleyItalic-qZ8ql.ttf",
+	"font_bold_italic_path": "res://assets/fonts/bainsley/BainsleyBoldItalic-AL6W2.ttf",
+	"font_color": "#a9b8d8",
+	"font_size": 0
+}

@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8fwq0explore01"]
+
+[ext_resource type="Script" path="res://scripts/explore/ExploreScene.gd" id="1_explore"]
+
+[node name="ExploreScene" type="Node2D"]
+script = ExtResource("1_explore")
+
+[node name="World" type="Node2D" parent="."]
+y_sort_enabled = true

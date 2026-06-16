@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://b8fwq0npc0001"]
+
+[ext_resource type="Script" path="res://scripts/explore/NPC.gd" id="1_npc"]
+
+[sub_resource type="CircleShape2D" id="npc_shape"]
+radius = 16.0
+
+[node name="NPC" type="Area2D"]
+script = ExtResource("1_npc")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -18)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -8)
+shape = SubResource("npc_shape")

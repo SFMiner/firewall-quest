@@ -69,6 +69,38 @@ Humans/humanoids = **LPC**; non-humanoid monsters = battler/hand art.
 **Milestone 0 — DONE.** Project skeleton boots to a main menu with no errors (config, input map,
 five autoload stubs, Dialogue Manager + PANEL balloon, LPC tooling, Main/MainMenu).
 
+**Milestone 3 — DONE.** Turn-based combat, validated by `scenes/dev/M3Test.tscn` (14/14); rendering
+confirmed by screenshot.
+- `Combatant` (`scripts/combat/Combatant.gd`): pure state/logic, built from PlayerState or
+  EnemyDef.stats_for(firewall); statuses (stun/sleep/poison/buff/debuff), `eff()` stat modifiers.
+- `CombatSystem`: async round/turn loop — SPD initiative, Attack/Skill/Item/Defend/Flee (60%, blocked
+  vs boss), damage = PWR−DEF min 1 (Defend halves), MP 3/5 + 2 regen/turn, skill effects
+  (damage/heal/stun/buff/debuff/steal), enemy AI (attack lowest HP; unlocked goblin flees low).
+  Players act via `submit_action` (UI); enemies via AI. Emits log/turn/state/ended signals.
+- `CombatScene`: party left / enemies right, initiative queue, action menu, target+skill+item
+  choosers, log, banner. Sanitized names show at firewall 100.
+- `Combat` autoload (`CombatManager`): `run_encounter(ids)` overlays the scene, awaits result, awards
+  XP (10/25/100/250) + Bytes + level-up, reduces firewall on boss kills, respawns at hub on defeat
+  (full heal, no permadeath). `EnemyEncounter` (Area2D) triggers it on touch; ExploreScene spawns
+  them in non-hub zones (used by Zone 1 in M4) and toasts rewards; Main reloads explore on defeat.
+
+**Milestone 2 — DONE.** Exploration + Welcometon, validated by `scenes/dev/M2Test.tscn` (19/19) and
+`M2DialogueTest.tscn`; rendering confirmed by screenshot.
+- `Player` (`scripts/explore/Player.gd`): real-time 4-dir LPC movement, sprint, interaction probe;
+  in `"player"` group; pauses on `GameManager.ui_blocking`.
+- `ExploreScene` builds ground (code-filled grass/path TileMapLayer), spawns player + follow camera,
+  and `_build_welcometon()` places 3 buildings (sprite + solid collision), 6 POIs, and 4 NPCs.
+- `NPC` (data-driven from npcs.json, `"npc"`+`"interactable"` groups) opens the **ported PANEL balloon**
+  with per-speaker fonts — confirmed working (Gerald's lines render in his gold Bainsley style).
+- `HUD`: party HP (top-left), zone + Firewall gauge (top-right, reacts to changes), interaction
+  prompt, toast.
+- `CharacterCreation`: name/random, class pick w/ live sprite preview, portrait (incl. stick-figure +
+  plague-doctor easter eggs). `Main.gd` wires New Game → creation → explore, and Continue → load → explore.
+- `Shop`: firewall-gated stock from items.json, Bytes spend, equip/stock, Gerald barks. Inn POI
+  heals + saves.
+- Assets: Cute RPG Village 32×32 tileset, procedural grass/path tiles, 3 cropped buildings, 9 LPC
+  64×64 characters (5 classes + 4 NPCs) in `assets/chars/` with recipes in `tools/`.
+
 **Milestone 1 — DONE.** Data layer + core models, validated by `scenes/dev/M1Test.tscn` (34/34
 checks pass headless).
 - Seed JSON in `/data/`: `classes`, `skills`, `items`, `enemies`, `npcs`, `zones/*` (Welcometon +
@@ -79,8 +111,10 @@ checks pass headless).
 - `scripts/PlayerState.gd` — class/level/xp/bytes/current+derived stats/equipment/inventory, with
   `to_dict`/`from_dict`. `GameManager.player_state` holds it; `SaveManager` serializes the flat
   section-13 schema (player fields + world state). Equipment re-applies on load.
-Not started: exploration/Welcometon (M2), combat (M3), zones/bosses (M4–5), multiplayer (M6),
-mods (M7), polish/export (M8).
+Not started: zones/bosses (M4–5), multiplayer (M6), mods (M7), polish/export (M8). Combat exists but
+no zone places encounters yet — Zone 1 (M4) is the first to use `EnemyEncounter`.
+M2 deferred polish: UI still uses the default Godot font (Press Start 2P pixel font in M8); the
+Welcometon building layout is spread out and minimal (art pass later).
 
 ## Known Issues & Workarounds
 - **`DataLoader.get_class_def()`**, not `get_class()` — `get_class` is a built-in `Object` method and
@@ -91,6 +125,11 @@ mods (M7), polish/export (M8).
   the §13 stat block is illustrative only.
 - Save schema extends §13 with `equipped_armor` (Shield/Steel Armor need an armor slot; §13 only
   showed `equipped_weapon`).
+- GDScript 4.6: returning a bare array literal where `Array[Combatant]` is expected is a runtime
+  error ("Trying to return an array of type Array"). Build a typed local and `append()` instead of
+  `return [x]` (bit `CombatSystem._resolve_targets`).
+- Driving `CombatSystem` from a test: connect `awaiting_action` and submit via
+  `submit_action.call_deferred(...)` — a synchronous submit races ahead of the loop's `await`.
 
 ## Data Formats
 - **Character style** `data/characters/<id>.json`: `font_path`, `font_bold_path`, `font_italic_path`,

@@ -1,0 +1,141 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8fwq0combat01"]
+
+[ext_resource type="Script" path="res://scripts/combat/CombatScene.gd" id="1_combat"]
+
+[node name="CombatScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_combat")
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.0784314, 0.0862745, 0.121569, 1)
+
+[node name="InitiativeBox" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 8.0
+offset_bottom = 36.0
+
+[node name="PartyBox" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 40.0
+offset_top = -120.0
+offset_right = 220.0
+offset_bottom = 120.0
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="EnemyBox" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -360.0
+offset_top = 56.0
+offset_right = -40.0
+offset_bottom = 440.0
+grow_horizontal = 0
+theme_override_constants/separation = 12
+
+[node name="Log" type="RichTextLabel" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -200.0
+offset_right = 460.0
+offset_bottom = -16.0
+grow_vertical = 0
+scroll_following = true
+
+[node name="ActionMenu" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -260.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="Attack" type="Button" parent="ActionMenu"]
+layout_mode = 2
+text = "Attack"
+
+[node name="Skill" type="Button" parent="ActionMenu"]
+layout_mode = 2
+text = "Skill"
+
+[node name="Item" type="Button" parent="ActionMenu"]
+layout_mode = 2
+text = "Item"
+
+[node name="Defend" type="Button" parent="ActionMenu"]
+layout_mode = 2
+text = "Defend"
+
+[node name="Flee" type="Button" parent="ActionMenu"]
+layout_mode = 2
+text = "Flee"
+
+[node name="ChoiceBox" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -300.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="Banner" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -40.0
+offset_right = 160.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 48
+text = "VICTORY!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="ActionMenu/Attack" to="." method="_on_attack_pressed"]
+[connection signal="pressed" from="ActionMenu/Skill" to="." method="_on_skill_pressed"]
+[connection signal="pressed" from="ActionMenu/Item" to="." method="_on_item_pressed"]
+[connection signal="pressed" from="ActionMenu/Defend" to="." method="_on_defend_pressed"]
+[connection signal="pressed" from="ActionMenu/Flee" to="." method="_on_flee_pressed"]

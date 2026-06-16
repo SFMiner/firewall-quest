@@ -1,0 +1,86 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8fwq0charcreate"]
+
+[ext_resource type="Script" path="res://scripts/ui/CharacterCreation.gd" id="1_cc"]
+
+[node name="CharacterCreation" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_cc")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.105882, 0.117647, 0.164706, 1)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -180.0
+offset_right = 200.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="VBox"]
+layout_mode = 2
+text = "CREATE YOUR CHARACTER"
+horizontal_alignment = 1
+
+[node name="Preview" type="TextureRect" parent="VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameRow" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="NameEdit" type="LineEdit" parent="VBox/NameRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Enter a name..."
+
+[node name="RandomButton" type="Button" parent="VBox/NameRow"]
+layout_mode = 2
+text = "Random"
+
+[node name="ClassLabel" type="Label" parent="VBox"]
+layout_mode = 2
+text = "Class:"
+
+[node name="ClassOption" type="OptionButton" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RoleLabel" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Warrior  —  Tank/DPS"
+horizontal_alignment = 1
+
+[node name="PortraitLabel" type="Label" parent="VBox"]
+layout_mode = 2
+text = "Portrait:"
+
+[node name="PortraitOption" type="OptionButton" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ConfirmButton" type="Button" parent="VBox"]
+layout_mode = 2
+text = "Begin"
+
+[connection signal="pressed" from="VBox/NameRow/RandomButton" to="." method="_on_random_pressed"]
+[connection signal="pressed" from="VBox/ConfirmButton" to="." method="_on_confirm_pressed"]

@@ -31,6 +31,10 @@ var flags: Dictionary = {}
 ## from a save on Continue.
 var player_state: PlayerState = null
 
+## True while a blocking UI (dialogue, shop, menu) is open. Exploration input
+## (movement, interaction) must early-return while this is set.
+var ui_blocking: bool = false
+
 
 ## Reduce firewall power by one boss-worth (clamped 0–100) and fire signals.
 func defeat_firewall_boss(boss_id: String) -> void:

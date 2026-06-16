@@ -106,11 +106,16 @@ func _do_attack(actor: Combatant, target: Combatant) -> void:
 		target = _first_living(_opponents_of(actor))
 	if target == null:
 		return
+	# Error 404 phases out of reach.
+	if target.behavior == "phase" and randf() < 0.4:
+		combat_log.emit("%s flickers out of reach — the attack finds nothing." % target.display_name)
+		return
 	var raw: int = maxi(1, actor.eff("pwr") - target.eff("def"))
 	if target.defending:
 		raw = maxi(1, int(ceil(raw / 2.0)))
 	var dealt: int = target.take_damage(raw)
 	combat_log.emit("%s hits %s for %d." % [actor.display_name, target.display_name, dealt])
+	_maybe_phase(target)
 
 
 func _do_skill(actor: Combatant, skill: SkillDef, target: Combatant) -> void:
@@ -137,6 +142,7 @@ func _apply_effect(actor: Combatant, skill: SkillDef, effect: Dictionary, target
 			for t: Combatant in targets:
 				var dealt: int = t.take_damage(maxi(1, val))
 				combat_log.emit("%s takes %d." % [t.display_name, dealt])
+				_maybe_phase(t)
 		"heal":
 			var amount: int = Stats.skill_value(skill.power, actor.eff("wit"))
 			for t: Combatant in targets:
@@ -198,6 +204,15 @@ func _try_flee(actor: Combatant) -> void:
 
 # === Enemy AI ===
 func _take_enemy_turn(enemy: Combatant) -> void:
+	# VICE_PRINCIPAL.exe: files detention forms instead of fighting. Survive until
+	# it runs out of forms and it powers down (it can also be beaten down normally).
+	if enemy.behavior == "assign_detention":
+		_file_form(enemy)
+		return
+	# Stack Overflow grows each turn and overflows if not killed in time.
+	if enemy.behavior == "grow":
+		_stack_overflow_turn(enemy)
+		return
 	# Flee when low (unlocked goblin behavior), non-boss only.
 	if enemy.behavior == "flee_when_low" and not enemy.is_boss and enemy.hp < enemy.max_hp * 0.3:
 		if randf() < 0.5:
@@ -207,6 +222,55 @@ func _take_enemy_turn(enemy: Combatant) -> void:
 	var target: Combatant = _lowest_hp(_living(party))
 	if target != null:
 		_do_attack(enemy, target)
+
+
+# Stack Overflow: bigger every turn; if it reaches turn 5 it overflows the stack.
+func _stack_overflow_turn(enemy: Combatant) -> void:
+	var t: int = int(enemy.special.get("turns", 0)) + 1
+	enemy.special["turns"] = t
+	if t >= 5:
+		combat_log.emit("%s OVERFLOWS THE STACK!" % enemy.display_name)
+		for p: Combatant in _living(party):
+			p.take_damage(p.hp)  # catastrophic
+		return
+	enemy.pwr += 2
+	enemy.max_hp += 4
+	enemy.hp += 4
+	combat_log.emit("%s grows larger... (turn %d/5)" % [enemy.display_name, t])
+	var target: Combatant = _lowest_hp(_living(party))
+	if target != null:
+		_do_attack(enemy, target)
+
+
+# ADMIN-9 escalates through three phases as its HP falls (Protocol/Escalation/Override).
+func _maybe_phase(c: Combatant) -> void:
+	if not c.is_final or not c.is_alive():
+		return
+	var ratio: float = float(c.hp) / float(c.max_hp)
+	var phase: int = int(c.special.get("phase", 1))
+	if phase == 1 and ratio <= 0.66:
+		c.special["phase"] = 2
+		c.pwr += 3
+		combat_log.emit("ADMIN-9: In extraordinary circumstances, the Office of the Chancellor permits... escalation.")
+	elif phase == 2 and ratio <= 0.33:
+		c.special["phase"] = 3
+		c.pwr += 4
+		combat_log.emit("ADMIN-9: OVERRIDE. I am sorry. I am only executing the policy I was given.")
+
+
+# VICE_PRINCIPAL's turn: file a form (minor damage); out of forms = powers down.
+func _file_form(boss: Combatant) -> void:
+	var forms: int = int(boss.special.get("forms", 0))
+	if forms <= 0:
+		combat_log.emit("%s has run out of forms to file. It powers down." % boss.display_name)
+		boss.hp = 0
+		return
+	boss.special["forms"] = forms - 1
+	var target: Combatant = _lowest_hp(_living(party))
+	if target != null:
+		var dmg: int = maxi(1, boss.eff("pwr") - target.eff("def"))
+		target.take_damage(dmg)
+	combat_log.emit("%s assigns a detention. (%d forms left)" % [boss.display_name, boss.special.forms])
 
 
 # === Targeting helpers ===

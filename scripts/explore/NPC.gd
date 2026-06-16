@@ -51,8 +51,9 @@ func _open_dialogue(resource: DialogueResource, title: String) -> void:
 	var balloon: Node = BALLOON_SCENE.instantiate()
 	get_tree().current_scene.add_child(balloon)
 	balloon.tree_exited.connect(_on_dialogue_closed)
-	# Pass GameManager so .dialogue conditionals can read `firewall_power`, flags, etc.
-	balloon.start(resource, title, [GameManager])
+	# Pass GameManager + Quests so .dialogue conditionals/mutations can read
+	# firewall_power/flags and drive quests directly.
+	balloon.start(resource, title, [GameManager, Quests])
 
 
 func _on_dialogue_closed() -> void:

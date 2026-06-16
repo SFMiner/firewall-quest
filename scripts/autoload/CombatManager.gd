@@ -33,6 +33,17 @@ func run_encounter(enemy_ids: Array) -> String:
 	return result
 
 
+# Apply a boss's victory rewards without a combat (e.g. the Wellness Counselor's
+# dialogue-battle resolves her instead of fighting).
+func resolve_boss(boss_id: String) -> void:
+	var ed: EnemyDef = DataLoader.get_enemy(boss_id)
+	if ed == null:
+		return
+	var c: Combatant = Combatant.from_enemy(ed, GameManager.firewall_power)
+	c.hp = 0
+	_award_victory([c])
+
+
 func _build_party() -> Array[Combatant]:
 	var arr: Array[Combatant] = []
 	if GameManager.player_state != null:
@@ -66,6 +77,8 @@ func _award_victory(enemies: Array[Combatant]) -> void:
 			continue
 		xp += e.enemy_def.xp
 		bytes += e.enemy_def.roll_bytes()
+		if not e.enemy_def.defeat_drop.is_empty() and ps != null:
+			ps.inventory.append(e.enemy_def.defeat_drop)
 		if e.enemy_def.firewall_boss:
 			GameManager.defeat_firewall_boss(e.enemy_def.id)
 	var leveled: bool = false

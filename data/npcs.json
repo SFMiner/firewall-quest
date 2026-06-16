@@ -19,8 +19,18 @@
 	},
 	"definitely_not_kevin": {
 		"id": "definitely_not_kevin", "name": "Definitely Not Kevin", "role": "black_market", "zone": "welcometon",
-		"char_style": "default", "sprite": "student",
+		"char_style": "default", "sprite": "definitely_not_kevin",
 		"dialogue_resource": "res://dialogue/welcometon.dialogue", "dialogue_title": "definitely_not_kevin",
 		"services": ["shop_illegal"]
+	},
+	"farmer": {
+		"id": "farmer", "name": "Farmer Bramble", "role": "quest", "zone": "zone1",
+		"char_style": "default", "sprite": "farmer",
+		"dialogue_resource": "res://dialogue/zone1.dialogue", "dialogue_title": "farmer"
+	},
+	"apologetic_merchant": {
+		"id": "apologetic_merchant", "name": "The Apologetic Merchant", "role": "quest", "zone": "zone1",
+		"char_style": "default", "sprite": "merchant",
+		"dialogue_resource": "res://dialogue/zone1.dialogue", "dialogue_title": "apologetic_merchant"
 	}
 }

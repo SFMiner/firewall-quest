@@ -13,6 +13,7 @@ var id: String = ""
 var display_name: String = ""
 var is_player: bool = false
 var is_boss: bool = false
+var is_final: bool = false
 var behavior: String = ""
 
 # Visuals: "lpc" (sprite_ref = char name) or "battler" (sprite_ref = texture path).
@@ -32,6 +33,8 @@ var wit: int = 0
 
 var defending: bool = false
 var statuses: Array[Dictionary] = []
+## Boss-specific scratch state (e.g. {"forms": 5} for VICE_PRINCIPAL).
+var special: Dictionary = {}
 
 # Back-references for persisting results / data lookups.
 var player_state: PlayerState = null
@@ -64,6 +67,7 @@ static func from_enemy(enemy_def: EnemyDef, firewall_power: int) -> Combatant:
 	c.id = enemy_def.id
 	c.enemy_def = enemy_def
 	c.is_boss = enemy_def.tier == "boss"
+	c.is_final = enemy_def.final_boss
 	c.behavior = s.get("behavior", "basic")
 	c.display_name = s.get("name", enemy_def.id)
 	c.sprite_kind = "battler"
@@ -76,6 +80,12 @@ static func from_enemy(enemy_def: EnemyDef, firewall_power: int) -> Combatant:
 	c.spd = int(s.get("spd", 1))
 	c.def = int(s.get("def", 0))
 	c.wit = int(s.get("wit", 0))
+	if enemy_def.defeat_mechanic == "out_of_forms":
+		c.special = {"forms": 5}
+	if c.is_final:
+		c.special = {"phase": 1}
+	if c.behavior == "grow":
+		c.special = {"turns": 0}
 	return c
 
 

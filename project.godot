@@ -23,6 +23,7 @@ SupabaseManager="*res://scripts/autoload/SupabaseManager.gd"
 PartyManager="*res://scripts/autoload/PartyManager.gd"
 ModManager="*res://scripts/autoload/ModManager.gd"
 Combat="*res://scripts/autoload/CombatManager.gd"
+Quests="*res://scripts/autoload/QuestManager.gd"
 DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
 
 [dialogue_manager]
@@ -100,7 +101,7 @@ open_party={
 
 [internationalization]
 
-locale/translations_pot_files=PackedStringArray("res://dialogue/smoke_test.dialogue", "res://dialogue/welcometon.dialogue")
+locale/translations_pot_files=PackedStringArray("res://dialogue/smoke_test.dialogue", "res://dialogue/welcometon.dialogue", "res://dialogue/zone1.dialogue", "res://dialogue/zone2.dialogue", "res://dialogue/zone3.dialogue", "res://dialogue/zone4.dialogue")
 
 [rendering]
 

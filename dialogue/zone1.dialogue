@@ -1,0 +1,39 @@
+~ farmer
+if quest_done("turnips")
+	Farmer Bramble: Bless you for finding my turnips. The Meadows feel safer already.
+elif quest_stage("turnips") == 2
+	Farmer Bramble: You found them?! By the old fence — of course. Thank you kindly!
+	do complete_quest("turnips")
+	Farmer Bramble: Take this for your trouble.
+elif quest_active("turnips")
+	Farmer Bramble: Still looking? Try the turnip patch over to the east.
+else
+	Farmer Bramble: My turnips have been... misplaced. Borrowed-without-asking, I suspect.
+	Farmer Bramble: Could you have a look around the Meadows for me?
+	do start_quest("turnips")
+=> END
+
+
+~ vice_principal
+VICE_PRINCIPAL.exe: A Form 7-B is required before any conflict may proceed. PER DISTRICT POLICY.
+VICE_PRINCIPAL.exe: ...You have not filed one. We will resolve this through the proper channels.
+=> END
+
+
+~ vice_principal_defeated
+VICE_PRINCIPAL.exe: Forms... depleted. Policy buffer... underrun. Sys-tem... yiel-ding.
+Vice Principal: Oh — goodness. Where am I? Did I... did I assign you a detention just now?
+Vice Principal: That wasn't me. That was the *policy* wearing my lanyard. Thank you for switching it off.
+=> END
+
+
+~ apologetic_merchant
+if quest_done("apologetic_merchant")
+	The Apologetic Merchant: Sorry again. And thank you. Sorry.
+elif quest_active("apologetic_merchant")
+	The Apologetic Merchant: We've made it to the edge? Oh — sorry, and thank you! So sorry.
+	do complete_quest("apologetic_merchant")
+else
+	The Apologetic Merchant: So sorry to bother you. Could you walk with me a while? I get nervous.
+	do start_quest("apologetic_merchant")
+=> END

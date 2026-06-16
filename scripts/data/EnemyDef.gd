@@ -12,6 +12,7 @@ var bytes_min: int = 0
 var bytes_max: int = 0
 var firewall_boss: bool = false
 var final_boss: bool = false
+var recruitable: bool = false
 var defeat_drop: String = ""
 var defeat_mechanic: String = ""
 var sanitized: Dictionary = {}
@@ -28,6 +29,7 @@ static func from_dict(data: Dictionary) -> EnemyDef:
 	e.bytes_max = int(data.get("bytes_max", 0))
 	e.firewall_boss = data.get("firewall_boss", false)
 	e.final_boss = data.get("final_boss", false)
+	e.recruitable = data.get("recruitable", false)
 	e.defeat_drop = data.get("defeat_drop", "")
 	e.defeat_mechanic = data.get("defeat_mechanic", "")
 	e.sanitized = data.get("sanitized", {})

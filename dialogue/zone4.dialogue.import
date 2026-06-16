@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://dpccu42k4183b"
+path="res://.godot/imported/zone4.dialogue-2a011788eb21f5718f972cf6c630db7e.tres"
+
+[deps]
+
+source_file="res://dialogue/zone4.dialogue"
+dest_files=["res://.godot/imported/zone4.dialogue-2a011788eb21f5718f972cf6c630db7e.tres"]
+
+[params]
+
+defaults=true

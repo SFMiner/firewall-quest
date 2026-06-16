@@ -55,7 +55,13 @@ func _on_continue() -> void:
 func _enter_explore() -> void:
 	var explore: ExploreScene = EXPLORE_SCENE.instantiate()
 	explore.player_defeated.connect(_on_player_defeated)
+	explore.zone_change_requested.connect(_on_zone_change_requested)
 	_set_screen(explore)
+
+
+func _on_zone_change_requested(zone_id: String) -> void:
+	GameManager.current_zone = zone_id
+	_enter_explore()
 
 
 # After a defeat, Combat has healed the player and set the zone to the hub;

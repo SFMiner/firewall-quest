@@ -1,0 +1,11 @@
+~ hall_monitor_prime
+HALL_MONITOR_PRIME: HALT. Where is your hall pass. This is not a question. PER DISTRICT PROCEDURE.
+HALL_MONITOR_PRIME: I cannot deviate from my assigned route. I cannot. I CANNOT.
+=> END
+
+
+~ hall_monitor_prime_defeated
+Hall Monitor: ...The loop. You closed the loop. The route is... gone.
+Hall Monitor: I was a knight once. Before the clipboard. Before the procedure.
+Hall Monitor: FREEDOM!!!
+=> END

@@ -1,0 +1,29 @@
+~ wellness_counselor
+THE_WELLNESS_COUNSELOR: Before any conflict, District Wellness Protocol 4(c) requires a feelings check. How are we feeling?
+- Validated, somehow. => wc_q2
+- Like a Form 7-B that gained sentience. => wc_q2
+- I would genuinely rather fight. => wc_q2
+
+~ wc_q2
+THE_WELLNESS_COUNSELOR: I'm hearing a lot of *energy*. Can you sit with that energy and name it?
+- Its name is Brenda. => wc_q3
+- It's the energy of wanting to leave this dungeon. => wc_q3
+- I named it. It did not help. => wc_q3
+
+~ wc_q3
+THE_WELLNESS_COUNSELOR: On a scale of one to ten, how *supported* do you feel right now?
+- Eleven. Aggressively supported. => wc_end
+- A four, but I'm rounding up to be polite. => wc_end
+- This is a trick question and I respect that. => wc_end
+
+~ wc_end
+THE_WELLNESS_COUNSELOR: ...I have run out of follow-up questions. The protocol has no further prompts.
+THE_WELLNESS_COUNSELOR: That means... resolution. Oh. Oh, I can feel my actual personality returning.
+do set_flag("boss_resolved_wellness_counselor")
+=> END
+
+
+~ wellness_counselor_defeated
+Wellness Counselor: Thank you. That protocol had me "validating" goblins for a solid month.
+Wellness Counselor: I'm a cleric, actually — a good one. Let me walk with you a while. I can patch you up.
+=> END

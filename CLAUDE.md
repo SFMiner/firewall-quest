@@ -69,6 +69,47 @@ Humans/humanoids = **LPC**; non-humanoid monsters = battler/hand art.
 **Milestone 0 — DONE.** Project skeleton boots to a main menu with no errors (config, input map,
 five autoload stubs, Dialogue Manager + PANEL balloon, LPC tooling, Main/MainMenu).
 
+**Milestone 5 — DONE (base game complete; MVP = Phases 0+1).** Zones 2–4 + bosses, validated by
+`scenes/dev/M5Test.tscn` (13/13); Counselor survey / ADMIN-9 fight / Hall Monitor puzzle confirmed by
+screenshot. Full firewall 100→0 chain works.
+- **Boss framing (see memory):** mini-bosses are school staff *possessed by District policy*, freed and
+  grateful on defeat; true antagonist is the off-screen **Office of the Chancellor** (unnamed; rotates
+  with the mayor) that ADMIN-9 (final boss) serves. Affectionate satire aimed up at policy.
+- Generalized, data-driven boss flow (`zone.boss` + per-zone `<boss>` / `<boss>_defeated` dialogue);
+  gated `next:<zone>` progression portals; `EnemyDef.recruitable`.
+- **Bespoke boss mechanics:** VICE_PRINCIPAL `out_of_forms` (combat); WELLNESS_COUNSELOR
+  `answer_questions` — a multiple-choice "feelings survey" **dialogue-battle** (balloon responses; sets
+  `boss_resolved_<id>`; `Combat.resolve_boss()` applies rewards without combat) → recruitable ally;
+  HALL_MONITOR_PRIME `lure_into_loop` — overworld chase puzzle (`HallMonitor` chases player across 3
+  markers); ADMIN-9 3-phase (`Combatant.is_final` + `CombatSystem._maybe_phase` at 66%/33%) + Office of
+  the Chancellor reveal in combat log + melancholy `admin_9_defeated` → `Credits` scene → "build
+  something" prompt → title.
+- **Zone-4 enemy gimmicks:** Error 404 evades (40%), Stack Overflow grows + overflows (party wipe) at
+  turn 5. (Corrupted Data "split" left as a normal enemy — simplification, noted.)
+- **Ashvale easter eggs** (POIs): raven gravestone (Z1), Birdman wanted poster + plague-doctor mask
+  chest → `plague_mask` cosmetic (Z2), Bronze Lantern fire-damaged wing note (Z3). Cerys's past hinted
+  in Welcometon dialogue.
+- Maps for Zones 2–4 reuse the grass/path ground (dungeon/castle/server art is a later polish pass).
+  Recruited ally is a flag + acknowledgment, not yet a second combat party member (future).
+
+**Milestone 4 — DONE (Phase 0 vertical slice complete).** Zone 1 + first Firewall Boss, validated by
+`scenes/dev/M4Test.tscn` (15/15); sanitized vs unlocked rendering confirmed by screenshot.
+- Zone travel via `travel:<id>` POIs; `ExploreScene.zone_change_requested` → Main reloads explore.
+  Welcometon has a "Leave Town → The Meadows" portal; zones have a return portal.
+- **Sanitation filter**: a pale screen-space `ColorRect` film over sanitized zones (CanvasLayer 1;
+  HUD bumped to layer 2) that tweens out when the zone unlocks (`GameManager.firewall_power_changed`).
+- `Quests` autoload (`QuestManager`): flag-based stages in `GameManager.flags` ("q_<id>"); methods
+  named for `.dialogue` use (`start_quest`/`complete_quest`/`quest_stage`/`quest_active`/`quest_done`),
+  passed to balloons as a game state alongside GameManager. Turnips quest is fully wired
+  (farmer → search patch → return); quest board shows status.
+- **VICE_PRINCIPAL.exe**: boss POI with Form-7B pre-fight dialogue, then `Combat.run_encounter`.
+  Defeat mechanic `out_of_forms` (`Combatant.special.forms`, behavior `assign_detention` in
+  CombatSystem): files a detention each turn (minor damage) and powers down when forms hit 0 — survive
+  to win (or beat it down). Drops `administrative_override`. Boss kill → firewall 100→75 → Iron Sword
+  stock, Gerald's new bark, filter lifts.
+- Zone-1 NPCs: `farmer`, `apologetic_merchant` (LPC sprites). Fixed M2 bug: Definitely-Not-Kevin's
+  npcs.json sprite was "student" (nonexistent) → now "definitely_not_kevin".
+
 **Milestone 3 — DONE.** Turn-based combat, validated by `scenes/dev/M3Test.tscn` (14/14); rendering
 confirmed by screenshot.
 - `Combatant` (`scripts/combat/Combatant.gd`): pure state/logic, built from PlayerState or
@@ -111,8 +152,11 @@ checks pass headless).
 - `scripts/PlayerState.gd` — class/level/xp/bytes/current+derived stats/equipment/inventory, with
   `to_dict`/`from_dict`. `GameManager.player_state` holds it; `SaveManager` serializes the flat
   section-13 schema (player fields + world state). Equipment re-applies on load.
-Not started: zones/bosses (M4–5), multiplayer (M6), mods (M7), polish/export (M8). Combat exists but
-no zone places encounters yet — Zone 1 (M4) is the first to use `EnemyEncounter`.
+Not started: multiplayer (M6), mods (M7), polish/export (M8).
+**Phases 0+1 complete — the MVP solo game is playable start to credits:** create character → Welcometon
+→ Meadows → Dungeon → Castle → Central Server, four bosses, firewall 100→0, melancholy finale, credits,
+"build something" prompt. Remaining work is networked play, the mod editor, and the polish/export pass
+(audio, pixel font, proper per-zone tilemap art, Windows/web export).
 M2 deferred polish: UI still uses the default Godot font (Press Start 2P pixel font in M8); the
 Welcometon building layout is spread out and minimal (art pass later).
 

@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://cnajecounivu6"
+path="res://.godot/imported/zone1.dialogue-404a08363f5be57d7ed141e720f6caf4.tres"
+
+[deps]
+
+source_file="res://dialogue/zone1.dialogue"
+dest_files=["res://.godot/imported/zone1.dialogue-404a08363f5be57d7ed141e720f6caf4.tres"]
+
+[params]
+
+defaults=true

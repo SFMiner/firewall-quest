@@ -73,6 +73,16 @@ static func get_npc(id: String) -> Dictionary:
 	load_all()
 	return _npcs.get(id, {})
 
+
+## Find a quest definition by id across all zones (or {} if none).
+static func get_quest(quest_id: String) -> Dictionary:
+	load_all()
+	for zone: ZoneDef in _zones.values():
+		for quest: Dictionary in zone.quests:
+			if quest.get("id", "") == quest_id:
+				return quest
+	return {}
+
 static func all_classes() -> Array:
 	load_all()
 	return _classes.values()

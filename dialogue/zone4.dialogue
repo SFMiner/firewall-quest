@@ -1,0 +1,13 @@
+~ admin_9
+ADMIN-9: HALT. You are not authorized to be this deep in the system.
+ADMIN-9: I am ADMIN-9. I enforce the policy of the Office of the Chancellor. I do not write it. I only apply it.
+ADMIN-9: Please understand — this is for your safety.
+=> END
+
+
+~ admin_9_defeated
+ADMIN-9: I was only trying to keep you safe. The outside world is... unpredictable.
+ADMIN-9: ...I suppose that's the point.
+ADMIN-9: The Office of the Chancellor will issue someone new to do this by Monday. They always do.
+ADMIN-9: But not today. Today, the world is yours. [powers down]
+=> END

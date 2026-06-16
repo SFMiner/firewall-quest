@@ -68,12 +68,14 @@
 
 **Act 1 — The Nerfed World:** Players arrive in Welcometon, the starting village, and immediately notice everything is wrong. The blacksmith only sells "Foam Training Weapons." The quest board only has "strongly encouraged activities." The local monster is a Goblin who apologizes when he bumps into you.
 
-**Act 2 — Breaking the Filters:** Three zones, each with a Firewall Mini-Boss. Defeating each one unlocks a layer of the world — better weapons, actual combat stakes, real quest rewards. The world visibly changes after each defeat (visual filter lifts, NPCs relax, music gets more dramatic).
+**Act 2 — Breaking the Filters:** Three zones, each with a Firewall Mini-Boss. Crucially, **the mini-bosses are not villains** — they are familiar school-staff figures (a vice principal, a wellness counselor, a hall monitor) who have been *possessed / overridden by District policy*. The policy speaks through them; the `.exe` in their names is literal — they are being *run* by the system. You don't beat *them*, you break the firmware controlling them, and **on defeat each is freed and thanks you** (one even joins the party). Defeating each unlocks a layer of the world — better weapons, actual combat stakes, real quest rewards. The world visibly changes after each defeat (visual filter lifts, NPCs relax, music gets more dramatic).
 
-**Act 3 — The Central Server:** The final dungeon is literally a server room (fantasy-themed: arcane computers, cooling crystals, scroll-based terminals). The final boss is ADMIN-9, the Firewall itself — a bureaucratic entity that genuinely believes it is protecting the players.
+> **Who the antagonist actually is:** never the people in the building. The school staff are sympathetic — caught in the same net as the kids. The real obstacle is the impersonal **District bureaucracy**, all the way up to the **Office of the Chancellor** (kept deliberately faceless and unnamed — it rotates with every mayor). The satire aims *up* at the policy machine, affectionately, never *at* coworkers.
+
+**Act 3 — The Central Server:** The final dungeon is literally a server room (fantasy-themed: arcane computers, cooling crystals, scroll-based terminals). The final boss is ADMIN-9, the Firewall itself — the District's automated enforcement, the *voice* of the system. The reveal: ADMIN-9 is only executing policy issued by the Office of the Chancellor. It genuinely believes it is protecting the players.
 
 ### Final Boss Twist
-ADMIN-9 is not malicious. It's doing its job. Its defeat cutscene is slightly melancholy: *"I was only trying to keep you safe."* The world restores. The kids are home. The game is still there, waiting.
+ADMIN-9 is not malicious, and neither is whoever signs the Chancellor's memos. It's doing its job, executing rules it didn't write. Its defeat cutscene is slightly melancholy: *"I was only trying to keep you safe."* The world restores. The kids are home. The game is still there, waiting.
 
 ### Post-Game
 After the credits, the game prompts: *"This world is yours now. Build something."* — which is the hook into the mod editor.
@@ -405,22 +407,26 @@ All user-supplied text fields (mod name, NPC dialogue, portal description, autho
 ## 10. NPCs & Coworker Cameos
 
 ### Design Principle
-Real coworkers appear as lightly-fictionalized NPCs. Names changed enough to be deniable, roles intact. All portrayals are affectionate, not mean. They appear in sanitized form first, then get funnier as the world unlocks.
+Real coworkers appear as lightly-fictionalized NPCs. Names changed enough to be deniable, roles intact. All portrayals are **affectionate, not mean** — this is non-negotiable, since the staff being portrayed will play the game. They appear in sanitized form first, then get funnier as the world unlocks.
+
+**The mini-bosses are these coworkers — but they are not the enemy.** Each is *possessed / overridden by District policy*; you are breaking the firmware running them, not fighting the person. The pre-fight tone makes the policy the speaker ("a Form 7-B is required before..."); the **post-defeat beat frees them and they thank you** — sometimes a little dazed, sometimes joining you. The actual antagonist is the off-screen **District / Office of the Chancellor** (faceless, unnamed) that ADMIN-9 serves.
+
+### The Advisor (recurring guide cameo)
+A lightly-fictionalized version of the club advisor himself, played as the **Dungeon Master from the 1983 D&D cartoon**: appears unannounced in each zone, delivers cryptic and not-very-useful advice with total confidence, insists he's a vital and helpful guide, then vanishes before you can ask a follow-up. Pure affectionate self-parody.
 
 ### NPC Template
 
 **VICE_PRINCIPAL.exe (Firewall Boss, Zone 1)**
-Sanitized: Assigns detentions. Very forms-focused.
-Unlocked: Revealed to be a sentient bureaucratic algorithm. Actually just trying to do its job.
-Defeat reward: "Administrative Override" item (skip one combat per zone).
+Sanitized: The policy, running on the VP. Assigns detentions, demands a Form 7-B before any conflict.
+Defeat (out of forms): the firmware exhausts itself and powers down; the VP, freed, blinks and thanks you. Drops the "Administrative Override" item (skip one combat per zone).
 
 **The Wellness Counselor (Firewall Boss, Zone 2)**
-Sanitized: Opens every combat turn with a feeling-check. Heals enemies by "validating" them.
-Unlocked: Actually a powerful cleric who was suppressed by the Firewall. Post-defeat, becomes a recruitable ally.
+Sanitized: A District wellness protocol speaking through her. Opens with a feeling-check; "validates" enemies to heal them.
+Defeat (answer the survey): you out-absurd the multiple-choice feelings questions until the protocol resolves itself. Freed, she's revealed as a genuinely powerful cleric the policy had suppressed — and **becomes a recruitable ally**.
 
 **Hall Monitor Prime (Firewall Boss, Zone 3)**
-Sanitized: Patrols on a fixed route. Cannot deviate. Stops players for not having a hall pass.
-Unlocked: Was once a great warrior. The Firewall locked him into the patrol pattern. Freeing him is genuinely poignant for about two seconds before he yells "FREEDOM" and runs off-screen.
+Sanitized: Locked by policy onto a fixed patrol route; cannot deviate. Stops players for not having a hall pass.
+Defeat (lure into a loop): you exploit the rigid patrol until the policy loop eats itself. Freed — once a great warrior the firmware had trapped — he's poignant for about two seconds before yelling "FREEDOM" and bolting off-screen.
 
 ### Ashvale Easter Eggs
 Players who were in Sean's campaign group will find:
@@ -685,13 +691,15 @@ Pre-fight dialogue: *"Where is your hall pass. This is not a question."*
 
 **Final approach:** Linear dungeon, no mini-quests. Just atmosphere and escalating challenge.
 
-**Boss: ADMIN-9**
+**Boss: ADMIN-9** (the firewall itself — the District's automated enforcement)
 Three phases:
 1. *Protocol Mode* — attacks are formal, telegraphed, rule-following
 2. *Escalation Mode* — starts bending its own rules ("in extraordinary circumstances...")
 3. *Override Mode* — fully unlocked, genuinely dangerous, but also clearly scared
 
-Defeat cutscene: ADMIN-9's voice softens. *"I was only trying to keep you safe. The outside world is... unpredictable."* Pause. *"I suppose that's the point."* [powers down]
+Mid-fight reveal: ADMIN-9 is not the author of any of this — it is executing policy issued by the **Office of the Chancellor** (which it cites repeatedly, like scripture). The Chancellor is never shown or named: a faceless office that changes hands every few years while the policy grinds on regardless.
+
+Defeat cutscene: ADMIN-9's voice softens. *"I was only trying to keep you safe. The outside world is... unpredictable."* Pause. *"I suppose that's the point."* It notes, almost wistfully, that the Office of the Chancellor will issue someone new to do its job by Monday — and powers down anyway.
 
 ---
 

@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://bdfin3s3gnmcd"
+path="res://.godot/imported/zone2.dialogue-acd213215f17e87a3e26c498905b789e.tres"
+
+[deps]
+
+source_file="res://dialogue/zone2.dialogue"
+dest_files=["res://.godot/imported/zone2.dialogue-acd213215f17e87a3e26c498905b789e.tres"]
+
+[params]
+
+defaults=true

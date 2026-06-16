@@ -58,5 +58,11 @@
 		"cost": 0, "unlock_firewall_max": 0,
 		"effect": { "kind": "skip_combat" },
 		"description": "Skip one combat per zone. Dropped by VICE_PRINCIPAL.exe."
+	},
+	"plague_mask": {
+		"id": "plague_mask", "name": "Plague Doctor Mask", "type": "cosmetic", "slot": "cosmetic",
+		"cost": 0, "unlock_firewall_max": 0,
+		"stat_mods": {},
+		"description": "A beaked mask from a chest in the dungeon. Purely cosmetic. An Ashvale keepsake."
 	}
 }

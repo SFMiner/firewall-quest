@@ -69,6 +69,34 @@ Humans/humanoids = **LPC**; non-humanoid monsters = battler/hand art.
 **Milestone 0 — DONE.** Project skeleton boots to a main menu with no errors (config, input map,
 five autoload stubs, Dialogue Manager + PANEL balloon, LPC tooling, Main/MainMenu).
 
+**Milestone 6 — IN PROGRESS (foundation done).** Multiplayer against a **local** Supabase (see
+`supabase-setup` memory). Verified by `scenes/dev/M6ConnTest.tscn` (11/11) from Godot.
+- `SupabaseManager` rewritten: real PostgREST-over-HTTPRequest, `{ok,code,data}` returns, config from
+  `res://supabase.cfg` (url + publishable key). Realtime = polling (no WebSocket; GH-Pages-safe).
+  Methods: create/get/join/update/delete room, push/pull save, fetch/upload mod.
+- Schema applied (rooms/player_saves/mods/mod_reports) + saved as a migration in the supabase project.
+- TODO: room lobby UI (host/join by code, enable Join Code button), shared-world presence (players see
+  each other via polling), shared party combat + 30s timer/AFK→Defend→AI + disconnect handling.
+- **Reality:** local Supabase only reaches this machine; real co-op needs a hosted instance + rebuild.
+
+**Milestone 8 — DONE (polish pass; multiplayer M6 + mods M7 still pending).** All regression suites
+green; menu/HUD/settings/zone art confirmed by screenshot.
+- **UI theme** (`assets/ui/theme.tres`, project `gui/theme/custom`): FantasticBoogaloo default font,
+  styled buttons/panels. A true pixel font (Press Start 2P / m5x7) is a **drop-in**: replace the font
+  in the theme. (Not shipped — no pixel `.ttf` was available locally.)
+- **Per-zone ground** (`ZONE_GROUND` → `ground.tres` sources): meadow grass, dungeon stone, castle
+  flagstone+carpet, server tech-grid. Procedurally generated 32×32 tiles.
+- **Audio** (`Audio` autoload): looping explore/combat music + hit/success/menu/coin SFX (CC0). Wired
+  in explore, combat, shop, menu. Headless-safe (dummy driver).
+- **Settings** (`Settings` autoload + `SettingsPanel`): music/SFX volume, text size (S/M/L → theme
+  font size), color-blind mode (neutral grey filter instead of blue). Persisted to `user://settings.cfg`.
+  Reachable from main menu and the new **PauseMenu** (Esc in explore: Resume/Settings/Save/Quit to Title).
+- **Export:** both presets work with the installed 4.6 templates. Web → `docs/` (single-threaded,
+  `thread_support=false`, so it runs on GitHub Pages with no special headers; `docs/_headers` is for
+  hosts that honor it). Windows → `export/firewall-quest.exe` (gitignored). Build:
+  `./Godot_v4.6-stable_win64.exe --headless --path . --export-release "Web" docs/index.html`.
+  Dev test scenes are excluded from builds (`scenes/dev/*`, `scripts/dev/*`).
+
 **Milestone 5 — DONE (base game complete; MVP = Phases 0+1).** Zones 2–4 + bosses, validated by
 `scenes/dev/M5Test.tscn` (13/13); Counselor survey / ADMIN-9 fight / Hall Monitor puzzle confirmed by
 screenshot. Full firewall 100→0 chain works.
@@ -152,11 +180,19 @@ checks pass headless).
 - `scripts/PlayerState.gd` — class/level/xp/bytes/current+derived stats/equipment/inventory, with
   `to_dict`/`from_dict`. `GameManager.player_state` holds it; `SaveManager` serializes the flat
   section-13 schema (player fields + world state). Equipment re-applies on load.
-Not started: multiplayer (M6), mods (M7), polish/export (M8).
-**Phases 0+1 complete — the MVP solo game is playable start to credits:** create character → Welcometon
-→ Meadows → Dungeon → Castle → Central Server, four bosses, firewall 100→0, melancholy finale, credits,
-"build something" prompt. Remaining work is networked play, the mod editor, and the polish/export pass
-(audio, pixel font, proper per-zone tilemap art, Windows/web export).
+Not started: multiplayer (M6), mod editor (M7). **Phases 0+1+polish are complete — the solo game is
+playable start to credits, themed, scored, settings-equipped, and exports to web + Windows.** Remaining:
+networked party play (M6, needs a live Supabase project + 2-client test) and the in-game mod editor +
+registry (M7). A true pixel font is a drop-in when you have one; richer per-zone decoration (props,
+painted walls beyond the floor) is optional future art.
+
+## Known Issues (polish-era)
+- Balloon stylebox emits a benign UID warning on cold boot (`uid://bsihak25pctp0`); it falls back to the
+  text path and works — clears after a full `--import`.
+- `docs/` web build (incl. ~37 MB `index.wasm`) is committed for GitHub Pages per the plan; consider a
+  CI deploy later if git history size matters.
+- Recruited ally (Wellness Counselor) is a flag, not yet a second combatant. Corrupted Data "split" is a
+  normal enemy. Zone maps are floor-tile + sprites (no painted walls yet).
 M2 deferred polish: UI still uses the default Godot font (Press Start 2P pixel font in M8); the
 Welcometon building layout is spread out and minimal (art pass later).
 

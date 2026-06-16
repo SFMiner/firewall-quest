@@ -34,6 +34,7 @@ func setup(party: Array[Combatant], enemies: Array[Combatant]) -> void:
 	_build_enemy_panels(enemies)
 	_banner.visible = false
 	_hide_menus()
+	Audio.play_music("combat")
 	system.start(party, enemies)
 
 

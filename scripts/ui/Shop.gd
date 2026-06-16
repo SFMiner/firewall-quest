@@ -50,6 +50,7 @@ func _on_buy(item_id: String) -> void:
 		_feedback.text = "Not enough Bytes."
 		return
 	ps.bytes -= item.cost
+	Audio.sfx("coin")
 	if item.is_equipment():
 		ps.equip(item_id)
 		_feedback.text = "Equipped %s." % item.name

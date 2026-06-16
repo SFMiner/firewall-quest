@@ -18,12 +18,21 @@ func _ready() -> void:
 
 
 func _on_new_game_pressed() -> void:
+	Audio.sfx("menu")
 	new_game_requested.emit()
 
 
 func _on_continue_pressed() -> void:
+	Audio.sfx("menu")
 	continue_requested.emit()
 
 
+func _on_settings_pressed() -> void:
+	Audio.sfx("menu")
+	var panel: Control = preload("res://scenes/ui/SettingsPanel.tscn").instantiate()
+	add_child(panel)
+
+
 func _on_quit_pressed() -> void:
+	Audio.sfx("menu")
 	get_tree().quit()

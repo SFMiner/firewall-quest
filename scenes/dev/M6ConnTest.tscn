@@ -1,0 +1,4 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8fwq0m6conn01"]
+[ext_resource type="Script" path="res://scripts/dev/m6_conn_test.gd" id="1"]
+[node name="M6ConnTest" type="Node"]
+script = ExtResource("1")

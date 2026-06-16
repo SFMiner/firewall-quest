@@ -24,6 +24,8 @@ PartyManager="*res://scripts/autoload/PartyManager.gd"
 ModManager="*res://scripts/autoload/ModManager.gd"
 Combat="*res://scripts/autoload/CombatManager.gd"
 Quests="*res://scripts/autoload/QuestManager.gd"
+Audio="*res://scripts/autoload/AudioManager.gd"
+Settings="*res://scripts/autoload/Settings.gd"
 DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
 
 [dialogue_manager]
@@ -40,6 +42,10 @@ window/stretch/aspect="expand"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg")
+
+[gui]
+
+theme/custom="res://assets/ui/theme.tres"
 
 [input]
 

@@ -114,6 +114,7 @@ func _do_attack(actor: Combatant, target: Combatant) -> void:
 	if target.defending:
 		raw = maxi(1, int(ceil(raw / 2.0)))
 	var dealt: int = target.take_damage(raw)
+	Audio.sfx("hit")
 	combat_log.emit("%s hits %s for %d." % [actor.display_name, target.display_name, dealt])
 	_maybe_phase(target)
 

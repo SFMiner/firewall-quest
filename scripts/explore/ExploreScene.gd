@@ -11,12 +11,17 @@ const NPC_SCENE: PackedScene = preload("res://scenes/npcs/NPC.tscn")
 const SHOP_SCENE: PackedScene = preload("res://scenes/ui/Shop.tscn")
 const BALLOON_SCENE: PackedScene = preload("res://scenes/ui/dialogue_balloon/dialogue_balloon.tscn")
 const CREDITS_SCENE: PackedScene = preload("res://scenes/main/Credits.tscn")
+const PAUSE_SCENE: PackedScene = preload("res://scenes/ui/PauseMenu.tscn")
 const GROUND_TILESET: TileSet = preload("res://assets/tilesets/ground.tres")
-const SOURCE_GRASS: int = 0
-const SOURCE_PATH: int = 1
 const TILE: int = 32
 const MAP_W: int = 44
 const MAP_H: int = 32
+
+# Per-zone ground tiles {floor_source, path_source} into ground.tres.
+const ZONE_GROUND: Dictionary = {
+	"welcometon": [0, 1], "zone1": [0, 1],
+	"zone2": [2, 3], "zone3": [4, 5], "zone4": [6, 7],
+}
 
 signal player_defeated()
 signal zone_change_requested(zone_id: String)
@@ -41,12 +46,19 @@ func _ready() -> void:
 	_setup_filter()
 	_setup_hud()
 	GameManager.firewall_power_changed.connect(_on_firewall_changed)
+	Audio.play_music("explore")
 
 
 func _setup_hud() -> void:
 	hud = HUD_SCENE.instantiate()
 	add_child(hud)
 	player.interaction_target_changed.connect(_on_interaction_target_changed)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("open_menu") and not GameManager.ui_blocking:
+		var pause: Node = PAUSE_SCENE.instantiate()
+		add_child(pause)
 
 
 func _on_interaction_target_changed(label: String) -> void:
@@ -58,6 +70,9 @@ func _on_interaction_target_changed(label: String) -> void:
 
 # Grass fill with a simple path cross through the middle of town.
 func _build_ground() -> void:
+	var sources: Array = ZONE_GROUND.get(zone.id if zone != null else "", [0, 1])
+	var floor_src: int = sources[0]
+	var path_src: int = sources[1]
 	var ground: TileMapLayer = TileMapLayer.new()
 	ground.name = "Ground"
 	ground.tile_set = GROUND_TILESET
@@ -65,15 +80,15 @@ func _build_ground() -> void:
 	_world.move_child(ground, 0)
 	for y: int in MAP_H:
 		for x: int in MAP_W:
-			ground.set_cell(Vector2i(x, y), SOURCE_GRASS, Vector2i(0, 0))
+			ground.set_cell(Vector2i(x, y), floor_src, Vector2i(0, 0))
 	var mid_y: int = MAP_H / 2
 	var mid_x: int = MAP_W / 2
 	for x: int in MAP_W:
-		ground.set_cell(Vector2i(x, mid_y), SOURCE_PATH, Vector2i(0, 0))
-		ground.set_cell(Vector2i(x, mid_y + 1), SOURCE_PATH, Vector2i(0, 0))
+		ground.set_cell(Vector2i(x, mid_y), path_src, Vector2i(0, 0))
+		ground.set_cell(Vector2i(x, mid_y + 1), path_src, Vector2i(0, 0))
 	for y: int in MAP_H:
-		ground.set_cell(Vector2i(mid_x, y), SOURCE_PATH, Vector2i(0, 0))
-		ground.set_cell(Vector2i(mid_x + 1, y), SOURCE_PATH, Vector2i(0, 0))
+		ground.set_cell(Vector2i(mid_x, y), path_src, Vector2i(0, 0))
+		ground.set_cell(Vector2i(mid_x + 1, y), path_src, Vector2i(0, 0))
 
 
 func _spawn_player() -> void:
@@ -92,7 +107,9 @@ func _setup_filter() -> void:
 	var layer: CanvasLayer = CanvasLayer.new()
 	layer.layer = 1
 	_film = ColorRect.new()
-	_film.color = Color(FILM_COLOR.r, FILM_COLOR.g, FILM_COLOR.b, 0.0)
+	# Color-blind mode uses a neutral grey film instead of the blue wash.
+	var tint: Color = Color(0.85, 0.85, 0.85) if Settings.colorblind else FILM_COLOR
+	_film.color = Color(tint.r, tint.g, tint.b, 0.0)
 	_film.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_film.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_film)
@@ -321,7 +338,9 @@ func _spawn_encounters() -> void:
 
 
 func _on_encounter_resolved(result: String) -> void:
+	Audio.play_music("explore")
 	if result == "victory":
+		Audio.sfx("success")
 		var r: Dictionary = Combat.last_rewards
 		var extra: String = "  Level up!" if r.get("leveled", false) else ""
 		hud.toast("Victory! +%d XP, +%d Bytes%s" % [r.get("xp", 0), r.get("bytes", 0), extra])

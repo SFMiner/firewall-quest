@@ -1,19 +1,61 @@
-[gd_resource type="TileSet" load_steps=5 format=3 uid="uid://b8fwq0ground01"]
+[gd_resource type="TileSet" load_steps=17 format=3 uid="uid://b8fwq0ground01"]
 
-[ext_resource type="Texture2D" path="res://assets/tilesets/ground/grass.png" id="1_grass"]
-[ext_resource type="Texture2D" path="res://assets/tilesets/ground/path.png" id="2_path"]
+[ext_resource type="Texture2D" path="res://assets/tilesets/ground/grass.png" id="0"]
+[ext_resource type="Texture2D" path="res://assets/tilesets/ground/path.png" id="1"]
+[ext_resource type="Texture2D" path="res://assets/tilesets/ground/dungeon_floor.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/tilesets/ground/dungeon_path.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/tilesets/ground/castle_floor.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/tilesets/ground/castle_path.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/tilesets/ground/server_floor.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/tilesets/ground/server_path.png" id="7"]
 
-[sub_resource type="TileSetAtlasSource" id="grass_src"]
-texture = ExtResource("1_grass")
+[sub_resource type="TileSetAtlasSource" id="s0"]
+texture = ExtResource("0")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 
-[sub_resource type="TileSetAtlasSource" id="path_src"]
-texture = ExtResource("2_path")
+[sub_resource type="TileSetAtlasSource" id="s1"]
+texture = ExtResource("1")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="s2"]
+texture = ExtResource("2")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="s3"]
+texture = ExtResource("3")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="s4"]
+texture = ExtResource("4")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="s5"]
+texture = ExtResource("5")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="s6"]
+texture = ExtResource("6")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="s7"]
+texture = ExtResource("7")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 
 [resource]
 tile_size = Vector2i(32, 32)
-sources/0 = SubResource("grass_src")
-sources/1 = SubResource("path_src")
+sources/0 = SubResource("s0")
+sources/1 = SubResource("s1")
+sources/2 = SubResource("s2")
+sources/3 = SubResource("s3")
+sources/4 = SubResource("s4")
+sources/5 = SubResource("s5")
+sources/6 = SubResource("s6")
+sources/7 = SubResource("s7")

@@ -37,7 +37,7 @@ func _run() -> void:
 	await get_tree().process_frame
 	_check("player in 'player' group", get_tree().get_nodes_in_group("player").size() == 1)
 	_check("4 NPCs placed", get_tree().get_nodes_in_group("npc").size() == 4)
-	_check("10 interactables (4 NPC + 6 POI)", get_tree().get_nodes_in_group("interactable").size() == 10)
+	_check("11 interactables (4 NPC + 7 POI)", get_tree().get_nodes_in_group("interactable").size() == 11)
 
 	var gerald: NPC = _find_npc("gerald")
 	_check("Gerald exists", gerald != null)

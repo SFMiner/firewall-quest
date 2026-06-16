@@ -59,10 +59,15 @@ layout_mode = 2
 disabled = true
 text = "Join Code"
 
+[node name="SettingsButton" type="Button" parent="VBox"]
+layout_mode = 2
+text = "Settings"
+
 [node name="QuitButton" type="Button" parent="VBox"]
 layout_mode = 2
 text = "Quit"
 
 [connection signal="pressed" from="VBox/NewGameButton" to="." method="_on_new_game_pressed"]
 [connection signal="pressed" from="VBox/ContinueButton" to="." method="_on_continue_pressed"]
+[connection signal="pressed" from="VBox/SettingsButton" to="." method="_on_settings_pressed"]
 [connection signal="pressed" from="VBox/QuitButton" to="." method="_on_quit_pressed"]

@@ -1,0 +1,7 @@
+# GitHub Pages ignores this file. The web build is single-threaded
+# (thread_support=false), so it needs no special headers there.
+# For hosts that honor _headers (Netlify/Cloudflare), these enable
+# cross-origin isolation if thread support is ever turned on.
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp

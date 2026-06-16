@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b8fwq0explore01"]
+[gd_scene format=3 uid="uid://dl2jdneyhg0wu"]
 
 [ext_resource type="Script" path="res://scripts/explore/ExploreScene.gd" id="1_explore"]
 

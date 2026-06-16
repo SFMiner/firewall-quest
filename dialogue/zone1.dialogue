@@ -29,11 +29,10 @@ Vice Principal: That wasn't me. That was the *policy* wearing my lanyard. Thank 
 
 ~ apologetic_merchant
 if quest_done("apologetic_merchant")
-	The Apologetic Merchant: Sorry again. And thank you. Sorry.
+	The Apologetic Merchant: You got me to the gate safe. Sorry. And thank you. Sorry.
 elif quest_active("apologetic_merchant")
-	The Apologetic Merchant: We've made it to the edge? Oh — sorry, and thank you! So sorry.
-	do complete_quest("apologetic_merchant")
+	The Apologetic Merchant: Right behind you. Sorry. Just lead me to the south gate. So sorry.
 else
-	The Apologetic Merchant: So sorry to bother you. Could you walk with me a while? I get nervous.
+	The Apologetic Merchant: So sorry to bother you — could you walk me to the south gate? I get nervous out here.
 	do start_quest("apologetic_merchant")
 => END

@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b8fwq0m2dlg001"]
+[gd_scene format=3 uid="uid://bpyxyof2y0441"]
 
 [ext_resource type="Script" path="res://scripts/dev/m2_dialogue_test.gd" id="1_m2d"]
 

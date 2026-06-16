@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b8fwq0m5test01"]
+[gd_scene format=3 uid="uid://bpyxyojjsdx41"]
 [ext_resource type="Script" path="res://scripts/dev/m5_test.gd" id="1_m5t"]
 [node name="M5Test" type="Node"]
 script = ExtResource("1_m5t")

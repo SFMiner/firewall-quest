@@ -7,10 +7,14 @@ extends Area2D
 
 const BALLOON_SCENE: PackedScene = preload("res://scenes/ui/dialogue_balloon/dialogue_balloon.tscn")
 
+## Emitted after this NPC's dialogue closes, if it offers a service (e.g. "shop").
+signal service_requested(service: String)
+
 ## Which npcs.json entry this is.
 @export var npc_id: String = ""
 
 var npc_name: String = ""
+var services: Array = []
 var _data: Dictionary = {}
 
 @onready var _sprite: AnimatedSprite2D = $Sprite
@@ -21,6 +25,7 @@ func _ready() -> void:
 	add_to_group("interactable")
 	_data = DataLoader.get_npc(npc_id)
 	npc_name = _data.get("name", npc_id)
+	services = _data.get("services", [])
 	var sprite_name: String = _data.get("sprite", npc_id)
 	var frames: SpriteFrames = LPCFrames.build(sprite_name)
 	if frames.get_animation_names().size() > 0:
@@ -31,7 +36,13 @@ func _ready() -> void:
 
 ## Prompt shown by the HUD when the player is in range.
 func interact_prompt() -> String:
+	if _sells():
+		return "Shop with %s" % npc_name
 	return "Talk to %s" % npc_name
+
+
+func _sells() -> bool:
+	return "shop" in services or "shop_illegal" in services
 
 
 ## Called by the player's interaction probe.
@@ -58,3 +69,8 @@ func _open_dialogue(resource: DialogueResource, title: String) -> void:
 
 func _on_dialogue_closed() -> void:
 	GameManager.ui_blocking = false
+	# Shopkeepers open their shop right after their line.
+	if "shop" in services:
+		service_requested.emit("shop")
+	elif "shop_illegal" in services:
+		service_requested.emit("shop_illegal")

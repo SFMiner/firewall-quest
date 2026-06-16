@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b8fwq0pause001"]
+[gd_scene format=3 uid="uid://bpyxyqnk6x441"]
 
 [ext_resource type="Script" path="res://scripts/ui/PauseMenu.gd" id="1_pause"]
 

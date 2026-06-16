@@ -33,6 +33,9 @@ var player: Player
 var zone: ZoneDef
 var hud: HUD
 var _film: ColorRect
+var _merchant: NPC = null
+var _escort_dest: POI = null
+var _escorting: bool = false
 
 @onready var _world: Node2D = $World
 
@@ -46,7 +49,35 @@ func _ready() -> void:
 	_setup_filter()
 	_setup_hud()
 	GameManager.firewall_power_changed.connect(_on_firewall_changed)
+	Quests.quest_updated.connect(_on_quest_updated)
 	Audio.play_music("explore")
+
+
+# Toast quest start/completion so quests register, and run the merchant escort.
+func _on_quest_updated(quest_id: String, stage: int) -> void:
+	var q: Dictionary = DataLoader.get_quest(quest_id)
+	var qname: String = q.get("name", quest_id)
+	if stage == 1:
+		hud.toast("New quest: %s" % qname, 3.0)
+	elif stage >= Quests.DONE:
+		hud.toast("Quest complete: %s  (+%d XP)" % [qname, int(q.get("xp", 20))], 3.0)
+	if quest_id == "apologetic_merchant":
+		if stage == 1:
+			_begin_escort()
+		elif stage >= Quests.DONE:
+			_escorting = false
+
+
+# The merchant trails the player to the south gate dropoff.
+func _begin_escort() -> void:
+	_escorting = true
+	_escort_dest = _add_poi(Vector2(704, 880), "escort_dest", "Walk the Merchant to the gate")
+
+
+func _process(delta: float) -> void:
+	if _escorting and is_instance_valid(_merchant) and player != null and not GameManager.ui_blocking:
+		var trail: Vector2 = player.global_position + Vector2(0, 36)
+		_merchant.global_position = _merchant.global_position.move_toward(trail, 95.0 * delta)
 
 
 func _setup_hud() -> void:
@@ -89,6 +120,27 @@ func _build_ground() -> void:
 	for y: int in MAP_H:
 		ground.set_cell(Vector2i(mid_x, y), path_src, Vector2i(0, 0))
 		ground.set_cell(Vector2i(mid_x + 1, y), path_src, Vector2i(0, 0))
+	_add_boundaries()
+
+
+# Invisible walls around the map edge so the player can't wander off into the void.
+func _add_boundaries() -> void:
+	var w: float = MAP_W * TILE
+	var h: float = MAP_H * TILE
+	var t: float = 24.0
+	var rects: Array[Rect2] = [
+		Rect2(-t, -t, t, h + t * 2), Rect2(w, -t, t, h + t * 2),
+		Rect2(0, -t, w, t), Rect2(0, h, w, t),
+	]
+	for r: Rect2 in rects:
+		var body: StaticBody2D = StaticBody2D.new()
+		var cs: CollisionShape2D = CollisionShape2D.new()
+		var shape: RectangleShape2D = RectangleShape2D.new()
+		shape.size = r.size
+		cs.shape = shape
+		cs.position = r.position + r.size / 2.0
+		body.add_child(cs)
+		_world.add_child(body)
 
 
 func _spawn_player() -> void:
@@ -170,7 +222,9 @@ func _build_combat_zone() -> void:
 
 func _build_meadows() -> void:
 	_add_npc("farmer", Vector2(280, 560))
-	_add_npc("apologetic_merchant", Vector2(1100, 560))
+	_merchant = _add_npc("apologetic_merchant", Vector2(1100, 560))
+	if Quests.quest_active("apologetic_merchant"):
+		_begin_escort()  # resume if re-entering mid-escort
 	_add_poi(Vector2(1180, 360), "find_turnips", "Search the turnip patch")
 	_add_poi(Vector2(360, 820), "raven_grave", "A small gravestone")  # Ashvale egg
 
@@ -394,25 +448,51 @@ func _add_building(base: Vector2, tex_path: String) -> void:
 	_world.add_child(node)
 
 
-func _add_poi(pos: Vector2, poi_id: String, label: String) -> void:
+func _add_poi(pos: Vector2, poi_id: String, label: String) -> POI:
 	var poi: POI = POI.new()
 	poi.position = pos
 	poi.poi_id = poi_id
 	poi.label = label
 	var cs: CollisionShape2D = CollisionShape2D.new()
 	var circle: CircleShape2D = CircleShape2D.new()
-	circle.radius = 28.0
+	circle.radius = 30.0
 	cs.shape = circle
 	poi.add_child(cs)
+	# Visible marker so the player can SEE there's something here. Portals get a
+	# bigger blue glyph; other POIs a yellow diamond. Both carry a floating label.
+	var is_portal: bool = poi_id.begins_with("travel:") or poi_id.begins_with("next:")
+	var marker: Polygon2D = Polygon2D.new()
+	var s: float = 22.0 if is_portal else 14.0
+	marker.polygon = PackedVector2Array([Vector2(0, -s), Vector2(s * 0.8, 0), Vector2(0, s), Vector2(-s * 0.8, 0)])
+	marker.color = Color(0.4, 0.7, 1.0, 0.95) if is_portal else Color(1.0, 0.85, 0.3, 0.9)
+	marker.position = Vector2(0, -8)
+	poi.add_child(marker)
+	var lbl: Label = Label.new()
+	lbl.text = label
+	lbl.position = Vector2(-110, -52)
+	lbl.size = Vector2(220, 20)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+	lbl.add_theme_constant_override("outline_size", 4)
+	poi.add_child(lbl)
 	poi.triggered.connect(_on_poi_triggered)
 	_world.add_child(poi)
+	return poi
 
 
-func _add_npc(npc_id: String, pos: Vector2) -> void:
+func _add_npc(npc_id: String, pos: Vector2) -> NPC:
 	var npc: NPC = NPC_SCENE.instantiate()
 	npc.npc_id = npc_id
 	npc.position = pos
+	npc.service_requested.connect(_on_npc_service)
 	_world.add_child(npc)
+	return npc
+
+
+func _on_npc_service(service: String) -> void:
+	if service == "shop" or service == "shop_illegal":
+		_open_shop()
 
 
 func _on_poi_triggered(poi_id: String) -> void:
@@ -432,6 +512,8 @@ func _on_poi_triggered(poi_id: String) -> void:
 			_open_shop()
 		"find_turnips":
 			_search_turnips()
+		"escort_dest":
+			_dropoff_merchant()
 		"find_usb":
 			_search_usb()
 		"birdman_poster":
@@ -463,6 +545,15 @@ func _search_turnips() -> void:
 		hud.toast("Just an empty turnip patch now.")
 	else:
 		hud.toast("A disturbed patch of turnips. Someone should ask the farmer.")
+
+
+func _dropoff_merchant() -> void:
+	if not Quests.quest_active("apologetic_merchant"):
+		hud.toast("The town gate. Nothing to do here right now.")
+		return
+	Quests.complete_quest("apologetic_merchant")  # toast comes from _on_quest_updated
+	if is_instance_valid(_escort_dest):
+		_escort_dest.queue_free()
 
 
 func _search_usb() -> void:

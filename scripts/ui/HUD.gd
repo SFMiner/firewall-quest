@@ -14,9 +14,24 @@ extends CanvasLayer
 
 func _ready() -> void:
 	GameManager.firewall_power_changed.connect(_on_firewall_changed)
+	_style_overlay(_toast)
+	_style_overlay(_prompt)
 	clear_prompt()
 	_toast.text = ""
 	refresh()
+
+
+# Dark rounded backing + outline so overlay text reads on any background.
+func _style_overlay(label: Label) -> void:
+	label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	label.add_theme_constant_override("outline_size", 5)
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
+	sb.bg_color = Color(0, 0, 0, 0.66)
+	sb.set_corner_radius_all(6)
+	sb.set_content_margin_all(8)
+	label.add_theme_stylebox_override("normal", sb)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 
 ## Show a transient message (e.g. "Game saved", "Equipped Foam Sword").

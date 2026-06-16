@@ -43,7 +43,7 @@ func _run() -> void:
 	_check("Gerald exists", gerald != null)
 	if gerald != null:
 		_check("Gerald name", gerald.npc_name == "Gerald the Blacksmith")
-		_check("Gerald interact prompt", gerald.interact_prompt() == "Talk to Gerald the Blacksmith")
+		_check("Gerald interact prompt (shopkeeper)", gerald.interact_prompt() == "Shop with Gerald the Blacksmith")
 
 	# --- Shop: buy a Foam Sword ---
 	ps.bytes = 50

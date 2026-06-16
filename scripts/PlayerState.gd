@@ -34,7 +34,7 @@ static func create(p_name: String, p_class_id: String) -> PlayerState:
 	ps.class_id = p_class_id
 	ps.level = 1
 	ps.xp = 0
-	ps.bytes = 0
+	ps.bytes = 15  # a little pocket money so the first shop visit isn't empty-handed
 	ps.recompute_stats()
 	ps.hp = ps.max_hp()
 	ps.mp = ps.max_mp()

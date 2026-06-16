@@ -21,11 +21,16 @@ func run_encounter(enemy_ids: Array) -> String:
 	GameManager.ui_blocking = true
 	var party: Array[Combatant] = _build_party()
 	var enemies: Array[Combatant] = _build_enemies(enemy_ids)
+	# Host the combat UI on a CanvasLayer so it renders in screen space — immune to
+	# the explore Camera2D's zoom/pan — and above the explore HUD (layer 2).
+	var layer: CanvasLayer = CanvasLayer.new()
+	layer.layer = 5
+	get_tree().root.add_child(layer)
 	var scene: CombatScene = COMBAT_SCENE.instantiate()
-	get_tree().root.add_child(scene)
+	layer.add_child(scene)
 	scene.setup(party, enemies)
 	var result: String = await scene.finished
-	scene.queue_free()
+	layer.queue_free()
 	_apply_results(result, enemies)
 	GameManager.ui_blocking = false
 	_active = false

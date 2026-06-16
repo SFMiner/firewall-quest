@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b8fwq0m2test01"]
+[gd_scene format=3 uid="uid://bpyxyogjsdx41"]
 
 [ext_resource type="Script" path="res://scripts/dev/m2_test.gd" id="1_m2t"]
 

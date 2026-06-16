@@ -1,0 +1,14 @@
+{
+	"id": "welcometon",
+	"display_name": "Welcometon",
+	"is_hub": true,
+	"always_real": false,
+	"unlock_firewall_max": 100,
+	"music": { "sanitized": "pleasant_bgm", "unlocked": "welcometon_theme" },
+	"palette": { "sanitized": "washed", "unlocked": "saturated" },
+	"npcs": ["cerys", "gerald", "chronicler", "definitely_not_kevin"],
+	"points_of_interest": ["inn", "shop", "quest_board", "library", "portal_alley", "bulletin_board"],
+	"enemies": [],
+	"boss": null,
+	"tilemap": "res://scenes/explore/maps/welcometon.tscn"
+}

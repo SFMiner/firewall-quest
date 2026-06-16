@@ -42,16 +42,18 @@ func has_save() -> bool:
 	return FileAccess.file_exists(USER_SAVE_PATH)
 
 
-# === Save payload (STUB — real fields populated from PlayerState in M1) ===
+# === Save payload (flat GDD section-13 schema: player fields + world state) ===
 func _collect_save_data() -> Dictionary:
-	return {
-		"version": SAVE_VERSION,
-		"firewall_power": GameManager.firewall_power,
-		"current_zone": GameManager.current_zone,
-		"bosses_defeated": GameManager.bosses_defeated,
-		"flags": GameManager.flags,
-		"player": GameManager.player,
-	}
+	var data: Dictionary = {}
+	if GameManager.player_state != null:
+		data = GameManager.player_state.to_dict()
+	data["version"] = SAVE_VERSION
+	data["firewall_power"] = GameManager.firewall_power
+	data["current_zone"] = GameManager.current_zone
+	data["bosses_defeated"] = GameManager.bosses_defeated
+	# World/story flags live at the top level (override PlayerState's own flags key).
+	data["flags"] = GameManager.flags
+	return data
 
 
 # === Desktop (user://) ===

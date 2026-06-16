@@ -1,0 +1,19 @@
+{
+	"id": "zone1",
+	"display_name": "The Meadows of Mild Inconvenience",
+	"is_hub": false,
+	"always_real": false,
+	"unlock_firewall_max": 75,
+	"music": { "sanitized": "pleasant_bgm", "unlocked": "meadows_theme" },
+	"palette": { "sanitized": "washed", "unlocked": "saturated" },
+	"npcs": [],
+	"enemies": ["goblin", "slime", "trophy_golem"],
+	"boss": "vice_principal",
+	"boss_intro": "I'm going to need you to fill out a Form 7B before any conflict can proceed.",
+	"quests": [
+		{ "id": "turnips", "name": "The Misplaced Turnips", "type": "fetch", "xp": 20 },
+		{ "id": "apologetic_merchant", "name": "Escort the Apologetic Merchant", "type": "escort", "xp": 30 },
+		{ "id": "difficult_animals", "name": "The Animals Are Having a Difficult Time", "type": "investigate", "xp": 25 }
+	],
+	"tilemap": "res://scenes/explore/maps/zone1.tscn"
+}

@@ -1,0 +1,98 @@
+{
+	"firm_handshake": {
+		"id": "firm_handshake", "name": "Firm Handshake", "tier": "sanitized",
+		"mp_cost": 3, "target": "enemy", "power": 0,
+		"effects": [{ "kind": "stun", "turns": 1 }],
+		"description": "Stuns an enemy for 1 turn. Surprisingly effective."
+	},
+	"shield_bash": {
+		"id": "shield_bash", "name": "Shield Bash", "tier": "unlocked",
+		"mp_cost": 3, "target": "enemy", "power": 4,
+		"effects": [{ "kind": "damage" }, { "kind": "stun", "turns": 1 }],
+		"description": "Slam an enemy for damage and stun it."
+	},
+	"borrow_without_asking": {
+		"id": "borrow_without_asking", "name": "Borrow Without Asking", "tier": "sanitized",
+		"mp_cost": 3, "target": "enemy", "power": 0,
+		"effects": [{ "kind": "steal" }],
+		"description": "Take an item from the enemy's inventory. To return later. Probably."
+	},
+	"backstab": {
+		"id": "backstab", "name": "Backstab", "tier": "unlocked",
+		"mp_cost": 3, "target": "enemy", "power": 6,
+		"effects": [{ "kind": "damage", "multiplier": 2.0, "requires": "stealth" }],
+		"description": "Double damage when striking from stealth."
+	},
+	"hypothesis": {
+		"id": "hypothesis", "name": "Hypothesis", "tier": "sanitized",
+		"mp_cost": 3, "target": "enemy", "power": 0,
+		"effects": [{ "kind": "damage", "random_min": 1, "random_max": 20 }],
+		"description": "Deals theoretically significant damage (random 1-20)."
+	},
+	"fireball": {
+		"id": "fireball", "name": "Fireball", "tier": "unlocked",
+		"mp_cost": 5, "target": "all_enemies", "power": 6,
+		"effects": [{ "kind": "damage", "element": "fire" }],
+		"description": "Burst of flame across all enemies."
+	},
+	"ice_lance": {
+		"id": "ice_lance", "name": "Ice Lance", "tier": "unlocked",
+		"mp_cost": 3, "target": "enemy", "power": 7,
+		"effects": [{ "kind": "damage", "element": "ice" }],
+		"description": "A piercing shard of ice."
+	},
+	"thunder": {
+		"id": "thunder", "name": "Thunder", "tier": "unlocked",
+		"mp_cost": 5, "target": "all_enemies", "power": 5,
+		"effects": [{ "kind": "damage", "element": "lightning" }],
+		"description": "A crackling bolt that arcs between foes."
+	},
+	"emotional_support": {
+		"id": "emotional_support", "name": "Emotional Support", "tier": "sanitized",
+		"mp_cost": 3, "target": "ally", "power": 5,
+		"effects": [{ "kind": "heal" }, { "kind": "buff", "stat": "def", "amount": 1, "name": "Validated" }],
+		"description": "Restore 5 HP and grant the Validated buff (+1 DEF)."
+	},
+	"heal": {
+		"id": "heal", "name": "Heal", "tier": "unlocked",
+		"mp_cost": 3, "target": "ally", "power": 12,
+		"effects": [{ "kind": "heal" }],
+		"description": "Restore a meaningful amount of HP."
+	},
+	"revive": {
+		"id": "revive", "name": "Revive", "tier": "unlocked",
+		"mp_cost": 5, "target": "ally_downed", "power": 10,
+		"effects": [{ "kind": "revive" }],
+		"description": "Bring a downed ally back into the fight."
+	},
+	"barrier": {
+		"id": "barrier", "name": "Barrier", "tier": "unlocked",
+		"mp_cost": 3, "target": "ally", "power": 0,
+		"effects": [{ "kind": "buff", "stat": "def", "amount": 3, "turns": 3, "name": "Barrier" }],
+		"description": "Shield an ally, granting +3 DEF for 3 turns."
+	},
+	"constructive_feedback": {
+		"id": "constructive_feedback", "name": "Constructive Feedback", "tier": "sanitized",
+		"mp_cost": 3, "target": "enemy", "power": 0,
+		"effects": [{ "kind": "debuff", "stat": "wit", "amount": 2, "name": "Critiqued" }],
+		"description": "Debuff an enemy's WIT by 2. For their own growth."
+	},
+	"inspire": {
+		"id": "inspire", "name": "Inspire", "tier": "unlocked",
+		"mp_cost": 3, "target": "party", "power": 0,
+		"effects": [{ "kind": "buff", "stat": "pwr", "amount": 2, "turns": 3, "name": "Inspired" }],
+		"description": "Rally the party, granting +2 PWR for 3 turns."
+	},
+	"taunt": {
+		"id": "taunt", "name": "Taunt", "tier": "unlocked",
+		"mp_cost": 3, "target": "self", "power": 0,
+		"effects": [{ "kind": "redirect", "turns": 2 }],
+		"description": "Redirect enemy attacks to yourself for 2 turns."
+	},
+	"lullaby": {
+		"id": "lullaby", "name": "Lullaby", "tier": "unlocked",
+		"mp_cost": 5, "target": "all_enemies", "power": 0,
+		"effects": [{ "kind": "sleep", "turns": 2 }],
+		"description": "Lull all enemies to sleep."
+	}
+}

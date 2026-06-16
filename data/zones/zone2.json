@@ -1,0 +1,19 @@
+{
+	"id": "zone2",
+	"display_name": "The Dungeon of Strongly Discouraged Behavior",
+	"is_hub": false,
+	"always_real": false,
+	"unlock_firewall_max": 50,
+	"music": { "sanitized": "pleasant_bgm", "unlocked": "dungeon_theme" },
+	"palette": { "sanitized": "washed", "unlocked": "saturated" },
+	"npcs": [],
+	"enemies": ["skeleton", "bat", "mimic"],
+	"boss": "wellness_counselor",
+	"boss_intro": "I'm sensing some tension in the room. Can we start by naming our feelings?",
+	"quests": [
+		{ "id": "no_hazards", "name": "No Hazardous Activity", "type": "avoid", "xp": 25 },
+		{ "id": "free_adventurers", "name": "Free the Imprisoned Adventurers", "type": "rescue", "xp": 30 },
+		{ "id": "ancient_artifact", "name": "Retrieve the Ancient Artifact (a USB Drive)", "type": "fetch", "xp": 30 }
+	],
+	"tilemap": "res://scenes/explore/maps/zone2.tscn"
+}

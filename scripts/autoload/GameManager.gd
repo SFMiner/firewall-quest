@@ -27,9 +27,9 @@ var bosses_defeated: Array[String] = []
 ## Arbitrary story flags (met_cerys, found_plague_mask, ...).
 var flags: Dictionary = {}
 
-## The active player character state. Populated at character creation (M2);
-## kept as a plain Dictionary until PlayerState lands in M1.
-var player: Dictionary = {}
+## The active player character. Populated at character creation (M2); restored
+## from a save on Continue.
+var player_state: PlayerState = null
 
 
 ## Reduce firewall power by one boss-worth (clamped 0–100) and fire signals.
@@ -64,3 +64,14 @@ func set_flag(flag: String, value: bool = true) -> void:
 
 func get_flag(flag: String) -> bool:
 	return flags.get(flag, false)
+
+
+## Restore world + player state from a loaded (flat) save dict.
+func apply_save_dict(data: Dictionary) -> void:
+	firewall_power = int(data.get("firewall_power", 100))
+	current_zone = data.get("current_zone", "welcometon")
+	bosses_defeated.clear()
+	for boss_id: String in data.get("bosses_defeated", []):
+		bosses_defeated.append(boss_id)
+	flags = data.get("flags", {})
+	player_state = PlayerState.from_dict(data)

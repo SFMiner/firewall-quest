@@ -1,0 +1,101 @@
+{
+	"goblin": {
+		"id": "goblin", "zone": "zone1", "tier": "standard", "xp": 10, "bytes_min": 2, "bytes_max": 5,
+		"sanitized": { "name": "Sorry Goblin", "hp": 8, "pwr": 1, "spd": 3, "def": 0, "behavior": "apologizes", "sprite": "goblin" },
+		"unlocked": { "name": "Goblin", "hp": 12, "pwr": 4, "spd": 4, "def": 1, "behavior": "flee_when_low", "sprite": "goblin" }
+	},
+	"slime": {
+		"id": "slime", "zone": "zone1", "tier": "standard", "xp": 10, "bytes_min": 2, "bytes_max": 4,
+		"sanitized": { "name": "Apologetic Slime", "hp": 6, "pwr": 1, "spd": 2, "def": 0, "behavior": "apologizes", "sprite": "slime" },
+		"unlocked": { "name": "Slime", "hp": 10, "pwr": 3, "spd": 2, "def": 1, "behavior": "basic", "sprite": "slime" }
+	},
+	"trophy_golem": {
+		"id": "trophy_golem", "zone": "zone1", "tier": "elite", "xp": 25, "bytes_min": 10, "bytes_max": 15,
+		"sanitized": { "name": "Participation Trophy Golem", "hp": 20, "pwr": 2, "spd": 1, "def": 3, "behavior": "tank", "sprite": "golem" },
+		"unlocked": { "name": "Trophy Golem", "hp": 28, "pwr": 5, "spd": 1, "def": 4, "behavior": "tank", "sprite": "golem" }
+	},
+	"skeleton": {
+		"id": "skeleton", "zone": "zone2", "tier": "standard", "xp": 10, "bytes_min": 3, "bytes_max": 6,
+		"sanitized": { "name": "Old Bones", "hp": 10, "pwr": 1, "spd": 3, "def": 1, "behavior": "basic", "sprite": "skeleton" },
+		"unlocked": { "name": "Skeleton", "hp": 14, "pwr": 5, "spd": 4, "def": 2, "behavior": "basic", "sprite": "skeleton" }
+	},
+	"bat": {
+		"id": "bat", "zone": "zone2", "tier": "standard", "xp": 10, "bytes_min": 2, "bytes_max": 5,
+		"sanitized": { "name": "Flying Mouse", "hp": 6, "pwr": 1, "spd": 6, "def": 0, "behavior": "shoo_only", "sprite": "bat" },
+		"unlocked": { "name": "Bat", "hp": 9, "pwr": 3, "spd": 7, "def": 0, "behavior": "basic", "sprite": "bat" }
+	},
+	"mimic": {
+		"id": "mimic", "zone": "zone2", "tier": "elite", "xp": 25, "bytes_min": 10, "bytes_max": 15,
+		"sanitized": { "name": "Surprise Box", "hp": 18, "pwr": 2, "spd": 2, "def": 2, "behavior": "ambush", "sprite": "mimic" },
+		"unlocked": { "name": "Mimic", "hp": 26, "pwr": 6, "spd": 3, "def": 3, "behavior": "ambush", "sprite": "mimic" }
+	},
+	"castle_guard": {
+		"id": "castle_guard", "zone": "zone3", "tier": "standard", "xp": 10, "bytes_min": 3, "bytes_max": 7,
+		"sanitized": { "name": "Conflict Mediator", "hp": 14, "pwr": 1, "spd": 3, "def": 2, "behavior": "talk", "sprite": "guard" },
+		"unlocked": { "name": "Castle Guard", "hp": 18, "pwr": 6, "spd": 4, "def": 3, "behavior": "basic", "sprite": "guard" }
+	},
+	"knight": {
+		"id": "knight", "zone": "zone3", "tier": "elite", "xp": 25, "bytes_min": 10, "bytes_max": 15,
+		"sanitized": { "name": "Strongly Opinionated Peer", "hp": 22, "pwr": 2, "spd": 3, "def": 3, "behavior": "talk", "sprite": "knight" },
+		"unlocked": { "name": "Knight", "hp": 30, "pwr": 7, "spd": 4, "def": 5, "behavior": "basic", "sprite": "knight" }
+	},
+	"dragon": {
+		"id": "dragon", "zone": "zone3", "tier": "elite", "xp": 25, "bytes_min": 12, "bytes_max": 15,
+		"sanitized": { "name": "Large Reptilian Roommate", "hp": 30, "pwr": 3, "spd": 3, "def": 3, "behavior": "warm_air", "sprite": "dragon" },
+		"unlocked": { "name": "Dragon", "hp": 40, "pwr": 9, "spd": 4, "def": 5, "behavior": "breath", "sprite": "dragon" }
+	},
+	"bureaucratic_delay": {
+		"id": "bureaucratic_delay", "zone": "zone3", "tier": "standard", "xp": 10, "bytes_min": 2, "bytes_max": 5,
+		"sanitized": { "name": "Bureaucratic Delay", "hp": 12, "pwr": 2, "spd": 1, "def": 2, "behavior": "stall", "sprite": "abstract" },
+		"unlocked": { "name": "Bureaucratic Delay", "hp": 12, "pwr": 2, "spd": 1, "def": 2, "behavior": "stall", "sprite": "abstract" }
+	},
+	"pending_approval": {
+		"id": "pending_approval", "zone": "zone3", "tier": "standard", "xp": 10, "bytes_min": 2, "bytes_max": 5,
+		"sanitized": { "name": "Pending Approval", "hp": 10, "pwr": 2, "spd": 2, "def": 1, "behavior": "stall", "sprite": "abstract" },
+		"unlocked": { "name": "Pending Approval", "hp": 10, "pwr": 2, "spd": 2, "def": 1, "behavior": "stall", "sprite": "abstract" }
+	},
+	"under_review": {
+		"id": "under_review", "zone": "zone3", "tier": "standard", "xp": 10, "bytes_min": 2, "bytes_max": 5,
+		"sanitized": { "name": "Under Review", "hp": 14, "pwr": 1, "spd": 1, "def": 3, "behavior": "stall", "sprite": "abstract" },
+		"unlocked": { "name": "Under Review", "hp": 14, "pwr": 1, "spd": 1, "def": 3, "behavior": "stall", "sprite": "abstract" }
+	},
+	"error_404": {
+		"id": "error_404", "zone": "zone4", "tier": "standard", "xp": 10, "bytes_min": 3, "bytes_max": 6,
+		"sanitized": { "name": "Error 404", "hp": 12, "pwr": 5, "spd": 6, "def": 1, "behavior": "phase", "sprite": "error404" },
+		"unlocked": { "name": "Error 404", "hp": 12, "pwr": 5, "spd": 6, "def": 1, "behavior": "phase", "sprite": "error404" }
+	},
+	"corrupted_data": {
+		"id": "corrupted_data", "zone": "zone4", "tier": "standard", "xp": 10, "bytes_min": 3, "bytes_max": 6,
+		"sanitized": { "name": "Corrupted Data", "hp": 16, "pwr": 6, "spd": 4, "def": 1, "behavior": "split", "sprite": "corrupt" },
+		"unlocked": { "name": "Corrupted Data", "hp": 16, "pwr": 6, "spd": 4, "def": 1, "behavior": "split", "sprite": "corrupt" }
+	},
+	"stack_overflow": {
+		"id": "stack_overflow", "zone": "zone4", "tier": "elite", "xp": 25, "bytes_min": 10, "bytes_max": 15,
+		"sanitized": { "name": "Stack Overflow", "hp": 24, "pwr": 4, "spd": 3, "def": 2, "behavior": "grow", "sprite": "stack" },
+		"unlocked": { "name": "Stack Overflow", "hp": 24, "pwr": 4, "spd": 3, "def": 2, "behavior": "grow", "sprite": "stack" }
+	},
+	"vice_principal": {
+		"id": "vice_principal", "zone": "zone1", "tier": "boss", "xp": 100, "bytes_min": 0, "bytes_max": 0,
+		"firewall_boss": true, "defeat_drop": "administrative_override", "defeat_mechanic": "out_of_forms",
+		"sanitized": { "name": "VICE_PRINCIPAL.exe", "hp": 40, "pwr": 3, "spd": 3, "def": 3, "behavior": "assign_detention", "sprite": "vice_principal" },
+		"unlocked": { "name": "VICE_PRINCIPAL.exe", "hp": 40, "pwr": 3, "spd": 3, "def": 3, "behavior": "assign_detention", "sprite": "vice_principal" }
+	},
+	"wellness_counselor": {
+		"id": "wellness_counselor", "zone": "zone2", "tier": "boss", "xp": 100, "bytes_min": 0, "bytes_max": 0,
+		"firewall_boss": true, "defeat_mechanic": "answer_questions", "recruitable": true,
+		"sanitized": { "name": "THE_WELLNESS_COUNSELOR", "hp": 50, "pwr": 2, "spd": 3, "def": 4, "behavior": "feelings_check", "sprite": "wellness_counselor" },
+		"unlocked": { "name": "THE_WELLNESS_COUNSELOR", "hp": 50, "pwr": 2, "spd": 3, "def": 4, "behavior": "feelings_check", "sprite": "wellness_counselor" }
+	},
+	"hall_monitor_prime": {
+		"id": "hall_monitor_prime", "zone": "zone3", "tier": "boss", "xp": 100, "bytes_min": 0, "bytes_max": 0,
+		"firewall_boss": true, "defeat_mechanic": "lure_into_loop",
+		"sanitized": { "name": "HALL_MONITOR_PRIME", "hp": 55, "pwr": 5, "spd": 5, "def": 4, "behavior": "fixed_patrol", "sprite": "hall_monitor" },
+		"unlocked": { "name": "HALL_MONITOR_PRIME", "hp": 55, "pwr": 5, "spd": 5, "def": 4, "behavior": "fixed_patrol", "sprite": "hall_monitor" }
+	},
+	"admin_9": {
+		"id": "admin_9", "zone": "zone4", "tier": "boss", "xp": 250, "bytes_min": 0, "bytes_max": 0,
+		"firewall_boss": true, "final_boss": true, "phases": ["protocol", "escalation", "override"],
+		"sanitized": { "name": "ADMIN-9", "hp": 80, "pwr": 7, "spd": 5, "def": 5, "behavior": "phased", "sprite": "admin9" },
+		"unlocked": { "name": "ADMIN-9", "hp": 80, "pwr": 7, "spd": 5, "def": 5, "behavior": "phased", "sprite": "admin9" }
+	}
+}

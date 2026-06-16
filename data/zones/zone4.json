@@ -1,0 +1,15 @@
+{
+	"id": "zone4",
+	"display_name": "The Central Server",
+	"is_hub": false,
+	"always_real": true,
+	"unlock_firewall_max": 0,
+	"music": { "sanitized": "server_theme", "unlocked": "server_theme" },
+	"palette": { "sanitized": "saturated", "unlocked": "saturated" },
+	"npcs": [],
+	"enemies": ["error_404", "corrupted_data", "stack_overflow"],
+	"boss": "admin_9",
+	"boss_intro": null,
+	"quests": [],
+	"tilemap": "res://scenes/explore/maps/zone4.tscn"
+}

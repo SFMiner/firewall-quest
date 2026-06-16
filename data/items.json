@@ -1,0 +1,62 @@
+{
+	"health_potion": {
+		"id": "health_potion", "name": "Health Potion", "type": "consumable",
+		"cost": 10, "unlock_firewall_max": 100,
+		"effect": { "kind": "heal", "amount": 15 },
+		"description": "Restore 15 HP."
+	},
+	"antidote": {
+		"id": "antidote", "name": "Antidote", "type": "consumable",
+		"cost": 8, "unlock_firewall_max": 100,
+		"effect": { "kind": "cure", "status": "poison" },
+		"description": "Cure Poison."
+	},
+	"smoke_bomb": {
+		"id": "smoke_bomb", "name": "Smoke Bomb", "type": "consumable",
+		"cost": 12, "unlock_firewall_max": 100,
+		"effect": { "kind": "flee_guarantee" },
+		"description": "Guarantee flee success."
+	},
+	"mana_tonic": {
+		"id": "mana_tonic", "name": "Mana Tonic", "type": "consumable",
+		"cost": 12, "unlock_firewall_max": 100,
+		"effect": { "kind": "restore_mp", "amount": 10 },
+		"description": "Restore 10 MP."
+	},
+	"foam_sword": {
+		"id": "foam_sword", "name": "Foam Sword", "type": "equipment", "slot": "weapon",
+		"cost": 5, "unlock_firewall_max": 100, "sanitized": true,
+		"stat_mods": { "pwr": 1 },
+		"description": "+1 PWR. Regulation-approved. Squeaks on impact."
+	},
+	"shield": {
+		"id": "shield", "name": "Shield", "type": "equipment", "slot": "armor",
+		"cost": 15, "unlock_firewall_max": 100,
+		"stat_mods": { "def": 2 },
+		"description": "+2 DEF."
+	},
+	"iron_sword": {
+		"id": "iron_sword", "name": "Iron Sword", "type": "equipment", "slot": "weapon",
+		"cost": 20, "unlock_firewall_max": 75,
+		"stat_mods": { "pwr": 3 },
+		"description": "+3 PWR. A real weapon. Don't tell the principal."
+	},
+	"steel_armor": {
+		"id": "steel_armor", "name": "Steel Armor", "type": "equipment", "slot": "armor",
+		"cost": 25, "unlock_firewall_max": 50,
+		"stat_mods": { "def": 4 },
+		"description": "+4 DEF."
+	},
+	"enchanted_staff": {
+		"id": "enchanted_staff", "name": "Enchanted Staff", "type": "equipment", "slot": "weapon",
+		"cost": 30, "unlock_firewall_max": 25,
+		"stat_mods": { "pwr": 3, "wit": 2 },
+		"description": "+3 PWR, +2 WIT. It hums faintly."
+	},
+	"administrative_override": {
+		"id": "administrative_override", "name": "Administrative Override", "type": "consumable",
+		"cost": 0, "unlock_firewall_max": 0,
+		"effect": { "kind": "skip_combat" },
+		"description": "Skip one combat per zone. Dropped by VICE_PRINCIPAL.exe."
+	}
+}

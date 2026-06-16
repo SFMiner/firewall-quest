@@ -66,23 +66,42 @@ Humans/humanoids = **LPC**; non-humanoid monsters = battler/hand art.
   to adopt LPC native size for humanoids.
 
 ## Current Implementation Status
-**Phase 0 / Milestone 0 — DONE.** Project skeleton boots to a main menu with no errors.
-- Configured `project.godot` (name, GL Compatibility, canvas_items stretch, nearest texture filter,
-  input map: move/interact/sprint/menu/map/party/ui_cancel_game).
-- Five autoload stubs with typed public APIs (real wiring deferred per milestone, marked `STUB`).
-- Dialogue Manager + PANEL-default custom balloon ported and importing; `.dialogue` compiles.
-- LPC sprite tooling ported and smoke-tested (composes a humanoid end-to-end).
-- `Main.tscn` + `MainMenu.tscn` (New Game / Continue / Join Code [disabled] / Quit).
-Not started: data layer (M1), exploration/Welcometon (M2), combat (M3), zones/bosses (M4–5),
-multiplayer (M6), mods (M7), polish/export (M8).
+**Milestone 0 — DONE.** Project skeleton boots to a main menu with no errors (config, input map,
+five autoload stubs, Dialogue Manager + PANEL balloon, LPC tooling, Main/MainMenu).
+
+**Milestone 1 — DONE.** Data layer + core models, validated by `scenes/dev/M1Test.tscn` (34/34
+checks pass headless).
+- Seed JSON in `/data/`: `classes`, `skills`, `items`, `enemies`, `npcs`, `zones/*` (Welcometon +
+  zones 1–4; 2–4 are skeletons).
+- Typed models in `scripts/data/`: `ClassDef`, `ItemDef`, `SkillDef`, `EnemyDef`, `ZoneDef`, plus
+  `DataLoader` (static, lazy-cached; **`get_class_def`** not `get_class` — see Known Issues).
+- `scripts/combat/Stats.gd` — leveling + WIT math (formula authoritative; see Known Issues).
+- `scripts/PlayerState.gd` — class/level/xp/bytes/current+derived stats/equipment/inventory, with
+  `to_dict`/`from_dict`. `GameManager.player_state` holds it; `SaveManager` serializes the flat
+  section-13 schema (player fields + world state). Equipment re-applies on load.
+Not started: exploration/Welcometon (M2), combat (M3), zones/bosses (M4–5), multiplayer (M6),
+mods (M7), polish/export (M8).
 
 ## Known Issues & Workarounds
-- (none yet — add entries here rather than deleting old ones)
+- **`DataLoader.get_class_def()`**, not `get_class()` — `get_class` is a built-in `Object` method and
+  shadowing it as a static causes a parse error ("Could not resolve external class member get_class").
+- **GDD leveling discrepancy:** §4's growth formula and §13's sample save contradict each other (a
+  level-3 rogue is HP24/MP14/PWR6/SPD8/DEF4/WIT5 by the formula; the §13 sample says
+  HP26/MP16/PWR5/SPD8/DEF3/WIT4). The **§4 formula is authoritative** (implemented in `Stats.gd`);
+  the §13 stat block is illustrative only.
+- Save schema extends §13 with `equipped_armor` (Shield/Steel Armor need an armor slot; §13 only
+  showed `equipped_weapon`).
 
 ## Data Formats
 - **Character style** `data/characters/<id>.json`: `font_path`, `font_bold_path`, `font_italic_path`,
   `font_bold_italic_path`, `font_color` (hex), `font_size` (offset added to base 22).
-- Save schema + mod JSON schema: see `firewall_quest_gdd.md` §13 and §9 (wired in M1 / M7).
+- **Class** `data/classes.json`: base_stats, primary_stat, sanitized/unlocked names, skill refs.
+- **Item** `data/items.json`: `type` (consumable/equipment), `slot`, `cost`, `unlock_firewall_max`
+  (purchasable while `firewall_power <= this`), `stat_mods`, `effect`.
+- **Enemy** `data/enemies.json`: sanitized + unlocked stat blocks, tier, xp, bytes range, boss meta.
+- **Zone** `data/zones/<id>.json`: unlock threshold, palette/music per state, enemies, boss, quests.
+- Save schema: flat — `PlayerState.to_dict()` fields + `firewall_power`/`current_zone`/
+  `bosses_defeated`/`flags`. See `firewall_quest_gdd.md` §13 and the discrepancy note above.
 
 ## Supabase Schema
 Not provisioned yet (M6). Planned tables: `rooms`, `player_saves`, `mods`, `mod_reports`

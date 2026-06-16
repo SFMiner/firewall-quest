@@ -1,0 +1,26 @@
+{
+	"cerys": {
+		"id": "cerys", "name": "Cerys", "role": "innkeeper", "zone": "welcometon",
+		"char_style": "default", "sprite": "cerys",
+		"dialogue_resource": "res://dialogue/welcometon.dialogue", "dialogue_title": "cerys",
+		"services": ["save", "rest"]
+	},
+	"gerald": {
+		"id": "gerald", "name": "Gerald the Blacksmith", "role": "blacksmith", "zone": "welcometon",
+		"char_style": "gerald", "sprite": "gerald",
+		"dialogue_resource": "res://dialogue/welcometon.dialogue", "dialogue_title": "gerald",
+		"services": ["shop"]
+	},
+	"chronicler": {
+		"id": "chronicler", "name": "The Chronicler", "role": "lore", "zone": "welcometon",
+		"char_style": "default", "sprite": "chronicler",
+		"dialogue_resource": "res://dialogue/welcometon.dialogue", "dialogue_title": "chronicler",
+		"services": ["library"]
+	},
+	"definitely_not_kevin": {
+		"id": "definitely_not_kevin", "name": "Definitely Not Kevin", "role": "black_market", "zone": "welcometon",
+		"char_style": "default", "sprite": "student",
+		"dialogue_resource": "res://dialogue/welcometon.dialogue", "dialogue_title": "definitely_not_kevin",
+		"services": ["shop_illegal"]
+	}
+}

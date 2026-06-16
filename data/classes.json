@@ -1,0 +1,57 @@
+{
+	"fighter": {
+		"id": "fighter",
+		"sanitized_name": "Conflict Resolution Specialist",
+		"unlocked_name": "Warrior",
+		"role": "Tank/DPS",
+		"primary_stat": "def",
+		"base_stats": { "hp": 20, "mp": 10, "pwr": 4, "spd": 4, "def": 2, "wit": 3 },
+		"sanitized_skill": "firm_handshake",
+		"unlocked_skills": ["shield_bash"],
+		"portrait": "fighter"
+	},
+	"rogue": {
+		"id": "rogue",
+		"sanitized_name": "Unauthorized Borrower",
+		"unlocked_name": "Thief",
+		"role": "Speed/stealth",
+		"primary_stat": "spd",
+		"base_stats": { "hp": 20, "mp": 10, "pwr": 4, "spd": 4, "def": 2, "wit": 3 },
+		"sanitized_skill": "borrow_without_asking",
+		"unlocked_skills": ["backstab"],
+		"portrait": "rogue"
+	},
+	"mage": {
+		"id": "mage",
+		"sanitized_name": "Hypothesis Tester",
+		"unlocked_name": "Wizard",
+		"role": "AoE damage",
+		"primary_stat": "wit",
+		"base_stats": { "hp": 20, "mp": 10, "pwr": 4, "spd": 4, "def": 2, "wit": 3 },
+		"sanitized_skill": "hypothesis",
+		"unlocked_skills": ["fireball", "ice_lance", "thunder"],
+		"portrait": "mage"
+	},
+	"healer": {
+		"id": "healer",
+		"sanitized_name": "Wellness Advocate",
+		"unlocked_name": "Cleric",
+		"role": "Support",
+		"primary_stat": "wit",
+		"base_stats": { "hp": 20, "mp": 10, "pwr": 4, "spd": 4, "def": 2, "wit": 3 },
+		"sanitized_skill": "emotional_support",
+		"unlocked_skills": ["heal", "revive", "barrier"],
+		"portrait": "healer"
+	},
+	"bard": {
+		"id": "bard",
+		"sanitized_name": "Enthusiastic Encourager",
+		"unlocked_name": "Bard",
+		"role": "Buff/debuff",
+		"primary_stat": "wit",
+		"base_stats": { "hp": 20, "mp": 10, "pwr": 4, "spd": 4, "def": 2, "wit": 3 },
+		"sanitized_skill": "constructive_feedback",
+		"unlocked_skills": ["inspire", "taunt", "lullaby"],
+		"portrait": "bard"
+	}
+}

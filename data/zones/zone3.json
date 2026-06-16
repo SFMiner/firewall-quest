@@ -1,0 +1,19 @@
+{
+	"id": "zone3",
+	"display_name": "The Castle of Appropriate Conflict Resolution",
+	"is_hub": false,
+	"always_real": false,
+	"unlock_firewall_max": 25,
+	"music": { "sanitized": "pleasant_bgm", "unlocked": "castle_theme" },
+	"palette": { "sanitized": "washed", "unlocked": "saturated" },
+	"npcs": [],
+	"enemies": ["castle_guard", "knight", "dragon", "bureaucratic_delay", "pending_approval", "under_review"],
+	"boss": "hall_monitor_prime",
+	"boss_intro": "Where is your hall pass. This is not a question.",
+	"quests": [
+		{ "id": "infiltrate", "name": "Infiltrate the Castle", "type": "stealth", "xp": 30 },
+		{ "id": "find_king", "name": "Find the King (He's Been Rescheduled)", "type": "investigate", "xp": 35 },
+		{ "id": "defeat_concerns", "name": "Defeat the Castle's Concerns", "type": "combat", "xp": 40 }
+	],
+	"tilemap": "res://scenes/explore/maps/zone3.tscn"
+}

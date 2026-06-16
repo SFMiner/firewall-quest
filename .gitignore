@@ -1,0 +1,12 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Secrets — never commit
+.env
+
+# Desktop export output (web export to /docs IS committed for GitHub Pages)
+/export/
+
+# Bundled engine binary (171 MB) — not source
+Godot_v4.6-stable_win64.exe

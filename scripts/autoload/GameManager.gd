@@ -1,0 +1,66 @@
+# === GameManager.gd ===
+# Global world state for Firewall Quest. The single source of truth for the
+# firewall-power "sanitation layer" that everything keys off (shop stock, NPC
+# lines, palette, zone unlocks). Autoload singleton — access as `GameManager`.
+extends Node
+
+## Emitted whenever firewall_power changes. Listeners (HUD, NPCs, shop, palette)
+## react to the new value. old_value lets transitions animate the delta.
+signal firewall_power_changed(new_value: int, old_value: int)
+
+## Emitted when a zone crosses from locked to unlocked.
+signal zone_unlocked(zone_id: String)
+
+## Emitted when a story/quest flag flips, so UI can refresh.
+signal flag_changed(flag: String, value: bool)
+
+## World-state spine: 100 = fully sanitized, 0 = fully unlocked (final area open).
+## Reduced by 25 per Firewall Boss defeated.
+var firewall_power: int = 100
+
+## Id of the zone the player currently occupies (e.g. "welcometon", "zone1").
+var current_zone: String = "welcometon"
+
+## Firewall bosses defeated this run (e.g. ["vice_principal"]).
+var bosses_defeated: Array[String] = []
+
+## Arbitrary story flags (met_cerys, found_plague_mask, ...).
+var flags: Dictionary = {}
+
+## The active player character state. Populated at character creation (M2);
+## kept as a plain Dictionary until PlayerState lands in M1.
+var player: Dictionary = {}
+
+
+## Reduce firewall power by one boss-worth (clamped 0–100) and fire signals.
+func defeat_firewall_boss(boss_id: String) -> void:
+	if boss_id in bosses_defeated:
+		return
+	bosses_defeated.append(boss_id)
+	var old_value: int = firewall_power
+	firewall_power = clampi(firewall_power - 25, 0, 100)
+	firewall_power_changed.emit(firewall_power, old_value)
+
+
+## True once a zone's gating threshold has been reached. Thresholds follow the
+## GDD world-state table (zone1 at <=75, zone2 at <=50, zone3 at <=25, zone4 at 0).
+func is_zone_unlocked(zone_id: String) -> bool:
+	match zone_id:
+		"welcometon": return true
+		"zone1": return firewall_power <= 75
+		"zone2": return firewall_power <= 50
+		"zone3": return firewall_power <= 25
+		"zone4": return firewall_power <= 0
+		_: return false
+
+
+## Set a story flag and notify listeners.
+func set_flag(flag: String, value: bool = true) -> void:
+	if flags.get(flag, false) == value:
+		return
+	flags[flag] = value
+	flag_changed.emit(flag, value)
+
+
+func get_flag(flag: String) -> bool:
+	return flags.get(flag, false)

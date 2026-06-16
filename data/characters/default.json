@@ -1,0 +1,11 @@
+{
+	"id": "default",
+	"name": "Narrator",
+	"description": "Fallback styling for narration and unnamed speakers.",
+	"font_path": "res://assets/fonts/bainsley/Bainsley-VGgJ6.ttf",
+	"font_bold_path": "res://assets/fonts/bainsley/BainsleyBold-DOpym.ttf",
+	"font_italic_path": "res://assets/fonts/bainsley/BainsleyItalic-qZ8ql.ttf",
+	"font_bold_italic_path": "res://assets/fonts/bainsley/BainsleyBoldItalic-AL6W2.ttf",
+	"font_color": "#bcbccc",
+	"font_size": 0
+}

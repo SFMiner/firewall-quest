@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://drjpjftrca66c"
+path="res://.godot/imported/smoke_test.dialogue-f3f9716fdb542be9296f0f90a4410287.tres"
+
+[deps]
+
+source_file="res://dialogue/smoke_test.dialogue"
+dest_files=["res://.godot/imported/smoke_test.dialogue-f3f9716fdb542be9296f0f90a4410287.tres"]
+
+[params]
+
+defaults=true

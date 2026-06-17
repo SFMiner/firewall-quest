@@ -16,6 +16,15 @@ var is_boss: bool = false
 var is_final: bool = false
 var behavior: String = ""
 
+## Shared-party combat: the owning player's id ("" = solo player / enemy / AI).
+## A player Combatant with a non-empty owner_id belongs to a remote or local
+## party member in a multiplayer room; the host's CombatManager relays their
+## turns instead of a local CombatScene UI.
+var owner_id: String = ""
+## True once a disconnected/repeatedly-timed-out remote player's turns are
+## taken over by simple AI (see CombatManager._take_ai_action).
+var ai_controlled: bool = false
+
 # Visuals: "lpc" (sprite_ref = char name) or "battler" (sprite_ref = texture path).
 var sprite_kind: String = "battler"
 var sprite_ref: String = ""
@@ -44,9 +53,10 @@ var player_state: PlayerState = null
 var enemy_def: EnemyDef = null
 
 
-static func from_player(ps: PlayerState) -> Combatant:
+static func from_player(ps: PlayerState, owner_id: String = "") -> Combatant:
 	var c: Combatant = Combatant.new()
-	c.id = "player"
+	c.id = owner_id if not owner_id.is_empty() else "player"
+	c.owner_id = owner_id
 	c.is_player = true
 	c.player_state = ps
 	var class_def: ClassDef = DataLoader.get_class_def(ps.class_id)
@@ -89,6 +99,38 @@ static func from_enemy(enemy_def: EnemyDef, firewall_power: int) -> Combatant:
 		c.special = {"phase": 1}
 	if c.behavior == "grow":
 		c.special = {"turns": 0}
+	return c
+
+
+## Shared-party combat: a snapshot dict for `game_state.combat.combatants`
+## (see CombatManager._push_snapshot). Display-only — no logic/back-refs.
+func to_snapshot() -> Dictionary:
+	return {
+		"owner": owner_id, "name": display_name,
+		"sprite_kind": sprite_kind, "sprite_ref": sprite_ref,
+		"hp": hp, "max_hp": max_hp, "mp": mp, "max_mp": max_mp,
+		"alive": is_alive(), "defending": defending, "is_boss": is_boss,
+		"statuses": statuses,
+	}
+
+
+## Rebuild a display-only "ghost" Combatant from a snapshot dict (guest viewer).
+static func from_snapshot(d: Dictionary) -> Combatant:
+	var c: Combatant = Combatant.new()
+	c.owner_id = d.get("owner", "")
+	c.is_player = not c.owner_id.is_empty()
+	c.id = c.owner_id if c.is_player else d.get("name", "")
+	c.display_name = d.get("name", "")
+	c.sprite_kind = d.get("sprite_kind", "battler")
+	c.sprite_ref = d.get("sprite_ref", "")
+	c.hp = int(d.get("hp", 0))
+	c.max_hp = int(d.get("max_hp", 1))
+	c.mp = int(d.get("mp", 0))
+	c.max_mp = int(d.get("max_mp", 0))
+	c.defending = d.get("defending", false)
+	c.is_boss = d.get("is_boss", false)
+	for st: Variant in d.get("statuses", []):
+		c.statuses.append(st as Dictionary)
 	return c
 
 

@@ -417,10 +417,21 @@ func _play_dialogue(title: String, on_done: Callable) -> void:
 func _after_combat_intro() -> void:
 	GameManager.ui_blocking = false
 	var boss_id: String = zone.boss
-	var result: String = await Combat.run_encounter([boss_id])
+	var result: String = await _run_encounter([boss_id])
 	_on_encounter_resolved(result)
 	if result == "victory":
 		_on_boss_freed(boss_id)
+
+
+# Routes through the shared-party relay in multiplayer (host runs it directly;
+# guests request it from the host and wait for CombatManager to report back).
+func _run_encounter(enemy_ids: Array) -> String:
+	if not PartyManager.is_multiplayer:
+		return await Combat.run_encounter(enemy_ids)
+	if PartyManager.is_host:
+		return await Combat.run_shared_encounter(enemy_ids)
+	await PartyManager.request_encounter(enemy_ids)
+	return await Combat.encounter_finished
 
 
 # Dialogue-battle boss (Wellness Counselor): the intro IS the multiple-choice

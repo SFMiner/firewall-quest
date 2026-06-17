@@ -12,6 +12,16 @@ var _current: Combatant = null
 var _party_panels: Dictionary = {}   # Combatant -> Label
 var _enemy_panels: Dictionary = {}   # Combatant -> Label
 
+## Shared-party combat (host): non-empty when only one party member's turns
+## should show this client's action menu — every other awaiting_action is
+## someone else's turn, relayed by CombatManager instead. "" = solo (always show).
+var local_owner_id: String = ""
+## Shared-party combat (guest): true when this scene is a read-only viewer
+## driven by `PartyManager.game_state.combat` snapshots instead of a live system.
+var viewer_mode: bool = false
+var _viewer_party: Array[Combatant] = []
+var _viewer_enemies: Array[Combatant] = []
+
 @onready var _party_box: VBoxContainer = %PartyBox
 @onready var _enemy_box: VBoxContainer = %EnemyBox
 @onready var _initiative_box: HBoxContainer = %InitiativeBox
@@ -25,17 +35,46 @@ var _enemy_panels: Dictionary = {}   # Combatant -> Label
 func setup(party: Array[Combatant], enemies: Array[Combatant]) -> void:
 	system = CombatSystem.new()
 	add_child(system)
-	system.combat_log.connect(_on_log)
-	system.turn_started.connect(_on_turn_started)
-	system.state_changed.connect(_refresh)
-	system.awaiting_action.connect(_on_awaiting_action)
-	system.combat_ended.connect(_on_combat_ended)
+	_wire_system_signals()
 	_build_party_panels(party)
 	_build_enemy_panels(enemies)
 	_banner.visible = false
 	_hide_menus()
 	Audio.play_music("combat")
 	system.start(party, enemies)
+
+
+## Shared-party combat (host): bind to an already-running CombatSystem (owned by
+## CombatManager, which also relays remote players' turns) instead of creating
+## one. `p_local_owner_id` gates which awaiting_action shows this client's menu.
+func setup_for_host(party: Array[Combatant], enemies: Array[Combatant], p_system: CombatSystem, p_local_owner_id: String) -> void:
+	system = p_system
+	local_owner_id = p_local_owner_id
+	_wire_system_signals()
+	_build_party_panels(party)
+	_build_enemy_panels(enemies)
+	_banner.visible = false
+	_hide_menus()
+	Audio.play_music("combat")
+
+
+## Shared-party combat (guest): read-only viewer over polled snapshots. Submits
+## via PartyManager.submit_combat_action() instead of a local CombatSystem.
+func setup_viewer() -> void:
+	viewer_mode = true
+	_banner.visible = false
+	_hide_menus()
+	Audio.play_music("combat")
+	PartyManager.combat_state_changed.connect(_on_viewer_snapshot)
+	_on_viewer_snapshot()
+
+
+func _wire_system_signals() -> void:
+	system.combat_log.connect(_on_log)
+	system.turn_started.connect(_on_turn_started)
+	system.state_changed.connect(_refresh)
+	system.awaiting_action.connect(_on_awaiting_action)
+	system.combat_ended.connect(_on_combat_ended)
 
 
 func _build_party_panels(party: Array[Combatant]) -> void:
@@ -122,8 +161,63 @@ func _on_turn_started(c: Combatant) -> void:
 
 func _on_awaiting_action(c: Combatant) -> void:
 	_current = c
+	if not local_owner_id.is_empty() and c.owner_id != local_owner_id:
+		_hide_menus()  # someone else's turn — CombatManager relays it; just watch
+		return
 	_action_menu.visible = true
 	_choice_box.visible = false
+
+
+# === Shared-party viewer (guest) ===
+func _on_viewer_snapshot() -> void:
+	var combat: Dictionary = PartyManager.game_state.get("combat", {})
+	if combat.is_empty():
+		return
+	var combatants: Array = combat.get("combatants", [])
+	var party_count: int = int(combat.get("party_count", 0))
+	_viewer_party.clear()
+	_viewer_enemies.clear()
+	for i: int in combatants.size():
+		var ghost: Combatant = Combatant.from_snapshot(combatants[i])
+		if i < party_count:
+			_viewer_party.append(ghost)
+		else:
+			_viewer_enemies.append(ghost)
+	for child: Node in _party_box.get_children():
+		child.queue_free()
+	for child: Node in _enemy_box.get_children():
+		child.queue_free()
+	_party_panels.clear()
+	_enemy_panels.clear()
+	_build_party_panels(_viewer_party)
+	_build_enemy_panels(_viewer_enemies)
+	_log.text = "\n".join(combat.get("log", []) as Array)
+	var result: String = combat.get("result", "ongoing")
+	if result != "ongoing":
+		_on_combat_ended(result)
+		return
+	if combat.get("turn_owner", "") == PartyManager.local_id:
+		_current = _find_viewer_self()
+		_action_menu.visible = true
+		_choice_box.visible = false
+	else:
+		_current = null
+		_hide_menus()
+
+
+func _find_viewer_self() -> Combatant:
+	for c: Combatant in _viewer_party:
+		if c.owner_id == PartyManager.local_id:
+			return c
+	return null
+
+
+func _living_viewer_enemies() -> Array[Combatant]:
+	var out: Array[Combatant] = []
+	for c: Combatant in _viewer_enemies:
+		if c.is_alive():
+			out.append(c)
+	return out
 
 
 func _hide_menus() -> void:
@@ -138,7 +232,8 @@ func _on_attack_pressed() -> void:
 
 func _on_skill_pressed() -> void:
 	_populate_choices()
-	var class_def: ClassDef = DataLoader.get_class_def(_current.player_state.class_id)
+	var class_id: String = _current.player_state.class_id if (_current != null and _current.player_state != null) else GameManager.player_state.class_id
+	var class_def: ClassDef = DataLoader.get_class_def(class_id)
 	var skill_ids: Array[String] = [class_def.sanitized_skill]
 	if GameManager.firewall_power <= 0:
 		skill_ids.append_array(class_def.unlocked_skills)
@@ -164,7 +259,7 @@ func _on_skill_chosen(skill_id: String) -> void:
 
 func _on_item_pressed() -> void:
 	_populate_choices()
-	var ps: PlayerState = _current.player_state
+	var ps: PlayerState = _current.player_state if (_current != null and _current.player_state != null) else GameManager.player_state
 	var seen: Dictionary = {}
 	for item_id: String in ps.inventory:
 		if seen.has(item_id):
@@ -190,7 +285,7 @@ func _on_flee_pressed() -> void:
 
 
 func _choose_enemy_target(action: String, skill_id: String = "") -> void:
-	var living: Array[Combatant] = system._living(system.enemies)
+	var living: Array[Combatant] = _living_viewer_enemies() if viewer_mode else system._living(system.enemies)
 	if living.size() == 1:
 		_submit(action, living[0], skill_id)
 		return
@@ -219,7 +314,11 @@ func _add_back_button() -> void:
 
 func _submit(action: String, target: Combatant = null, skill_id: String = "", item_id: String = "") -> void:
 	_hide_menus()
-	system.submit_action(action, target, skill_id, item_id)
+	if viewer_mode:
+		var idx: int = _viewer_enemies.find(target) if target != null else -1
+		PartyManager.submit_combat_action({"action": action, "target_index": idx, "skill_id": skill_id, "item_id": item_id})
+	else:
+		system.submit_action(action, target, skill_id, item_id)
 
 
 func _on_combat_ended(result: String) -> void:

@@ -130,6 +130,38 @@ func host_set(key: String, value: Variant) -> void:
 	await SupabaseManager.update_room_state(room_code, game_state)
 
 
+## Guest: write our submitted action into the shared combat blob for the host
+## to consume (read-modify-write, like presence). {action, target_index, skill_id, item_id}.
+func submit_combat_action(action: Dictionary) -> void:
+	if is_host or not is_multiplayer:
+		return
+	var room: Dictionary = await SupabaseManager.get_room(room_code)
+	if not room.ok or not (room.data is Array) or room.data.is_empty():
+		return
+	game_state = room.data[0].get("game_state", {})
+	if not game_state.has("combat"):
+		game_state["combat"] = {}
+	if not game_state["combat"].has("actions"):
+		game_state["combat"]["actions"] = {}
+	game_state["combat"]["actions"][local_id] = action
+	await SupabaseManager.update_room_state(room_code, game_state)
+
+
+## Guest: ask the host to start a shared encounter (walked into an EnemyEncounter).
+## The host's CombatManager picks this up on its next poll and clears it.
+func request_encounter(enemy_ids: Array) -> void:
+	if is_host or not is_multiplayer:
+		return
+	var room: Dictionary = await SupabaseManager.get_room(room_code)
+	if not room.ok or not (room.data is Array) or room.data.is_empty():
+		return
+	game_state = room.data[0].get("game_state", {})
+	if not game_state.has("combat"):
+		game_state["combat"] = {}
+	game_state["combat"]["requested"] = {"enemy_ids": enemy_ids, "by": local_id, "t": Time.get_unix_time_from_system()}
+	await SupabaseManager.update_room_state(room_code, game_state)
+
+
 func party_size() -> int:
 	return members.size()
 

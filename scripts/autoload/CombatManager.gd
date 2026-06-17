@@ -7,10 +7,31 @@ extends Node
 signal encounter_finished(result: String)
 
 const COMBAT_SCENE: PackedScene = preload("res://scenes/combat/CombatScene.tscn")
+## Per CLAUDE.md "NEXT TASK — Layer 2": no response from a remote player's turn
+## for this long auto-Defends; after REMOTE_AI_STRIKES consecutive timeouts (or
+## a stale heartbeat) the host's simple AI takes over that player's turns.
+const REMOTE_ACTION_TIMEOUT: float = 30.0
+const REMOTE_AI_STRIKES: int = 3
+## Boss HP multiplier for a party of n: 1 + BOSS_SCALE_PER_EXTRA * (n - 1).
+const BOSS_SCALE_PER_EXTRA: float = 0.6
 
 var _active: bool = false
 ## Populated after each victory: {xp, bytes, leveled}.
 var last_rewards: Dictionary = {}
+
+# === Shared-party combat (host relay state) ===
+var _mp_turn_owner: String = ""
+var _mp_log_tail: Array[String] = []
+var _remote_timeouts: Dictionary = {}  # owner_id -> consecutive timeout count
+
+# === Shared-party combat (guest viewer state) ===
+var _viewer_layer: CanvasLayer = null
+var _viewer_scene: CombatScene = null
+var _viewer_open: bool = false
+
+
+func _ready() -> void:
+	PartyManager.combat_state_changed.connect(_on_remote_combat_changed)
 
 
 ## Run a battle against the given enemy ids. Returns "victory"/"defeat"/"fled".
@@ -36,6 +57,254 @@ func run_encounter(enemy_ids: Array) -> String:
 	_active = false
 	encounter_finished.emit(result)
 	return result
+
+
+## Shared-party combat (host-authoritative). Builds the MP party from
+## PartyManager.members, runs the real CombatSystem locally, relays remote
+## players' turns by polling the shared `combat.actions` blob, and pushes a
+## display snapshot to the room on every change so guests can render it.
+func run_shared_encounter(enemy_ids: Array) -> String:
+	if _active:
+		return "busy"
+	if not PartyManager.is_host:
+		return "not_host"
+	_active = true
+	_remote_timeouts.clear()
+	_mp_log_tail.clear()
+	GameManager.ui_blocking = true
+	var party: Array[Combatant] = _build_mp_party()
+	var enemies: Array[Combatant] = _build_mp_enemies(enemy_ids, party.size())
+	var layer: CanvasLayer = CanvasLayer.new()
+	layer.layer = 5
+	get_tree().root.add_child(layer)
+	var system: CombatSystem = CombatSystem.new()
+	add_child(system)
+	var scene: CombatScene = COMBAT_SCENE.instantiate()
+	layer.add_child(scene)
+	scene.setup_for_host(party, enemies, system, PartyManager.local_id)
+	_wire_relay(system)
+	_wire_snapshot_push(system)
+	system.start(party, enemies)
+	var result: String = await scene.finished
+	system.queue_free()
+	layer.queue_free()
+	_apply_results(result, enemies)
+	await _push_final_rewards()
+	GameManager.ui_blocking = false
+	_active = false
+	encounter_finished.emit(result)
+	return result
+
+
+func _build_mp_party() -> Array[Combatant]:
+	var arr: Array[Combatant] = []
+	for m: Dictionary in PartyManager.members:
+		var owner_id: String = m.get("id", "")
+		var ps: PlayerState
+		if owner_id == PartyManager.local_id and GameManager.player_state != null:
+			ps = GameManager.player_state
+		else:
+			ps = PlayerState.from_dict(m.get("data", {}))
+		arr.append(Combatant.from_player(ps, owner_id))
+	return arr
+
+
+func _build_mp_enemies(enemy_ids: Array, party_size: int) -> Array[Combatant]:
+	var arr: Array[Combatant] = _build_enemies(enemy_ids)
+	if party_size > 1:
+		var mult: float = 1.0 + BOSS_SCALE_PER_EXTRA * float(party_size - 1)
+		for c: Combatant in arr:
+			if c.is_boss:
+				c.max_hp = int(round(c.max_hp * mult))
+				c.hp = c.max_hp
+	return arr
+
+
+# === Host relay: take remote players' turns on their behalf ===
+func _wire_relay(system: CombatSystem) -> void:
+	system.awaiting_action.connect(_on_relay_awaiting_action.bind(system))
+
+
+func _on_relay_awaiting_action(c: Combatant, system: CombatSystem) -> void:
+	if c.owner_id != "" and c.owner_id != PartyManager.local_id:
+		_relay_remote_turn(system, c)
+
+
+func _relay_remote_turn(system: CombatSystem, c: Combatant) -> void:
+	if not c.ai_controlled and _is_member_offline(c.owner_id):
+		c.ai_controlled = true
+	if c.ai_controlled:
+		_take_ai_action(system, c)
+		return
+	var act: Dictionary = await _await_remote_action(c.owner_id)
+	if system.result != "ongoing":
+		return
+	if act.is_empty():
+		_note_timeout(c)
+		if c.ai_controlled:
+			_take_ai_action(system, c)
+		else:
+			system.submit_action("defend")
+		return
+	_remote_timeouts[c.owner_id] = 0
+	var target_idx: int = int(act.get("target_index", -1))
+	var target: Combatant = system.enemies[target_idx] if target_idx >= 0 and target_idx < system.enemies.size() else null
+	system.submit_action(act.get("action", "defend"), target, act.get("skill_id", ""), act.get("item_id", ""))
+
+
+func _await_remote_action(owner_id: String) -> Dictionary:
+	var elapsed: float = 0.0
+	while elapsed < REMOTE_ACTION_TIMEOUT:
+		var actions: Dictionary = PartyManager.game_state.get("combat", {}).get("actions", {})
+		if actions.has(owner_id):
+			var act: Dictionary = actions[owner_id]
+			actions.erase(owner_id)
+			return act
+		await get_tree().create_timer(0.4).timeout
+		elapsed += 0.4
+	return {}
+
+
+func _note_timeout(c: Combatant) -> void:
+	var n: int = int(_remote_timeouts.get(c.owner_id, 0)) + 1
+	_remote_timeouts[c.owner_id] = n
+	if n >= REMOTE_AI_STRIKES:
+		c.ai_controlled = true
+
+
+func _is_member_offline(owner_id: String) -> bool:
+	for m: Dictionary in PartyManager.members:
+		if m.get("id", "") == owner_id:
+			return not m.get("online", true)
+	return true
+
+
+## Simple takeover AI: attack the lowest-HP enemy.
+func _take_ai_action(system: CombatSystem, c: Combatant) -> void:
+	if system.result != "ongoing":
+		return
+	var target: Combatant = system._lowest_hp(system._living(system.enemies))
+	system.submit_action("attack", target)
+
+
+# === Host: push a display snapshot to the room on every change ===
+func _wire_snapshot_push(system: CombatSystem) -> void:
+	system.combat_log.connect(_on_mp_log)
+	system.turn_started.connect(_on_mp_turn_started.bind(system))
+	system.state_changed.connect(func() -> void: _push_snapshot(system))
+	system.awaiting_action.connect(func(_c: Combatant) -> void: _push_snapshot(system))
+	system.combat_ended.connect(func(_r: String) -> void: _push_snapshot(system))
+
+
+func _on_mp_log(line: String) -> void:
+	_mp_log_tail.append(line)
+	if _mp_log_tail.size() > 8:
+		_mp_log_tail = _mp_log_tail.slice(_mp_log_tail.size() - 8)
+
+
+func _on_mp_turn_started(c: Combatant, system: CombatSystem) -> void:
+	_mp_turn_owner = c.owner_id
+	_push_snapshot(system)
+
+
+func _push_snapshot(system: CombatSystem) -> void:
+	if not PartyManager.is_host:
+		return
+	var combat: Dictionary = PartyManager.game_state.get("combat", {})
+	var actions: Dictionary = combat.get("actions", {})
+	var combatants: Array = []
+	for c: Combatant in system.party:
+		combatants.append(c.to_snapshot())
+	for c: Combatant in system.enemies:
+		combatants.append(c.to_snapshot())
+	var snapshot: Dictionary = {
+		"active": system.result == "ongoing",
+		"party_count": system.party.size(),
+		"combatants": combatants,
+		"turn_owner": _mp_turn_owner,
+		"log": _mp_log_tail,
+		"result": system.result,
+		"actions": actions,
+	}
+	PartyManager.host_set("combat", snapshot)
+
+
+## Pushed once more right after rewards are computed (combat_ended's snapshot
+## fires before _apply_results runs), so guests can apply the same XP/Bytes.
+func _push_final_rewards() -> void:
+	if not PartyManager.is_host:
+		return
+	var combat: Dictionary = PartyManager.game_state.get("combat", {})
+	combat["rewards"] = last_rewards
+	await PartyManager.host_set("combat", combat)
+
+
+# === Host: pick up encounter requests from guests ===
+func _maybe_start_requested_encounter() -> void:
+	if _active:
+		return
+	var combat: Dictionary = PartyManager.game_state.get("combat", {})
+	var req: Dictionary = combat.get("requested", {})
+	if req.is_empty():
+		return
+	var enemy_ids: Array = req.get("enemy_ids", [])
+	combat.erase("requested")
+	PartyManager.game_state["combat"] = combat
+	run_shared_encounter(enemy_ids)
+
+
+# === Guest: open/close a read-only viewer when the host's combat is active ===
+func _on_remote_combat_changed() -> void:
+	if PartyManager.is_host:
+		_maybe_start_requested_encounter()
+		return
+	if _viewer_open:
+		return
+	var combat: Dictionary = PartyManager.game_state.get("combat", {})
+	if combat.get("active", false):
+		_open_viewer()
+
+
+func _open_viewer() -> void:
+	_viewer_open = true
+	GameManager.ui_blocking = true
+	_viewer_layer = CanvasLayer.new()
+	_viewer_layer.layer = 5
+	get_tree().root.add_child(_viewer_layer)
+	_viewer_scene = COMBAT_SCENE.instantiate()
+	_viewer_layer.add_child(_viewer_scene)
+	_viewer_scene.finished.connect(_close_viewer)
+	_viewer_scene.setup_viewer()
+
+
+func _close_viewer(result: String) -> void:
+	_apply_guest_rewards(result)
+	if _viewer_scene != null and is_instance_valid(_viewer_scene):
+		_viewer_scene.queue_free()
+	if _viewer_layer != null and is_instance_valid(_viewer_layer):
+		_viewer_layer.queue_free()
+	_viewer_scene = null
+	_viewer_layer = null
+	_viewer_open = false
+	GameManager.ui_blocking = false
+	encounter_finished.emit(result)
+
+
+func _apply_guest_rewards(result: String) -> void:
+	last_rewards = {"xp": 0, "bytes": 0, "leveled": false}
+	if result == "victory":
+		var combat: Dictionary = PartyManager.game_state.get("combat", {})
+		var rewards: Dictionary = combat.get("rewards", {})
+		var ps: PlayerState = GameManager.player_state
+		var xp: int = int(rewards.get("xp", 0))
+		var bytes: int = int(rewards.get("bytes", 0))
+		var leveled: bool = false
+		if ps != null:
+			ps.bytes += bytes
+			leveled = ps.add_xp(xp)
+		last_rewards = {"xp": xp, "bytes": bytes, "leveled": leveled}
+	elif result == "defeat":
+		_respawn()
 
 
 # Apply a boss's victory rewards without a combat (e.g. the Wellness Counselor's

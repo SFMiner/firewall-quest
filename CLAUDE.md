@@ -69,8 +69,10 @@ Humans/humanoids = **LPC**; non-humanoid monsters = battler/hand art.
 **Milestone 0 — DONE.** Project skeleton boots to a main menu with no errors (config, input map,
 five autoload stubs, Dialogue Manager + PANEL balloon, LPC tooling, Main/MainMenu).
 
-**Milestone 6 — IN PROGRESS (foundation done).** Multiplayer against a **local** Supabase (see
-`supabase-setup` memory). Verified by `scenes/dev/M6ConnTest.tscn` (11/11) from Godot.
+**Milestone 6 — IN PROGRESS (connectivity, lobby, presence, and shared combat all built).** Multiplayer
+against a **local** Supabase (see `supabase-setup` memory). Verified by `scenes/dev/M6ConnTest.tscn`
+(10/11 — `push_save` intermittently fails against the local stack, unrelated to combat/party code).
+Remaining before M6 is done: the live 2-window playtest of Layer 2 combat feel.
 - `SupabaseManager` rewritten: real PostgREST-over-HTTPRequest, `{ok,code,data}` returns, config from
   `res://supabase.cfg` (url + publishable key). Realtime = polling (no WebSocket; GH-Pages-safe).
   Methods: create/get/join/update/delete room, push/pull save, fetch/upload mod.
@@ -87,32 +89,48 @@ five autoload stubs, Dialogue Manager + PANEL balloon, LPC tooling, Main/MainMen
   DISCONNECT_TIMEOUT (6s) = offline. ExploreScene spawns/lerps **remote-player avatars** (LPC sprite +
   name) for others in the same zone, writes local presence each frame, and syncs **shared firewall power**
   (host pushes on change via `host_set`; guests adopt via `world_state_changed` → `GameManager.adopt_firewall_power`).
-- **NEXT TASK — Layer 2: full shared party combat (host-authoritative). Not started in code.** Planned
-  architecture (decided with Sean; build as a self-contained module so solo combat stays intact):
-  1. `Combatant.owner_id` (player id; "" = enemy/AI) + `ai_controlled` flag. Solo player = a sentinel
-     owner so its menu still shows.
-  2. Build the MP party from `PartyManager.members`: local player from `GameManager.player_state`; remote
-     players from their presence `data` (full PlayerState dict) via `PlayerState.from_dict` →
-     `Combatant.from_player`, each tagged with `owner_id = member.id`.
-  3. Serialize combat to `game_state.combat` = `{active, enemy_ids, combatants:[{owner,name,sprite,hp,
-     max_hp,mp,max_mp,alive,statuses}], turn_owner, log, result, actions:{<pid>:{action,target_index,
-     skill_id,item_id}}}`. Host writes it (via `PartyManager.host_set("combat", ...)`) on every change.
-  4. **Host** runs the real `CombatSystem`. On `awaiting_action(c)`: if `c.owner_id == local_id` → its own
-     `CombatScene` UI submits; else → poll `game_state.combat.actions[c.owner_id]` (30s timeout →
-     auto-Defend; 3 consecutive timeouts → `ai_controlled`, AI picks: attack lowest-HP enemy / self-heal
-     <30%). Disconnect (heartbeat stale) → same AI takeover.
-  5. **Guests** don't run CombatSystem — a viewer renders `game_state.combat` (reuse CombatScene panel
-     layout, snapshot-driven) and shows the action menu only when `turn_owner == local_id`; submitting
-     writes `actions[local_id]` for the host to consume. Targets are referenced by enemy **index**.
-  6. Encounter trigger relay: when any player hits an `EnemyEncounter`, write a request the host turns
-     into `run_shared_encounter(enemy_ids)`; all clients open the combat view when `combat.active`.
-  7. Rewards: per-player XP/Bytes; boss firewall drop already shared via `host_set("firewall_power")`.
-  8. **Boss HP scales with party size** (e.g. ×(1 + 0.6·(n−1))) so a full party doesn't melt bosses.
-  - Validate from one instance: combat-state serialize/deserialize + the host's remote-action relay with a
-    simulated guest action written to the room. Live feel needs the 2-window playtest.
+- **Layer 2 — full shared party combat (host-authoritative) DONE in code** (`M6CombatTest`, 19/19 vs
+  live backend: snapshot round-trip, MP party building, boss HP scaling, action/request write paths, and
+  a full live encounter where a simulated guest's turns are relayed end-to-end to victory with rewards
+  pushed back). Solo `CombatScene.setup()` / `CombatManager.run_encounter()` untouched — MP is a parallel
+  path (`setup_for_host` / `setup_viewer`, `run_shared_encounter`).
+  1. `Combatant.owner_id` (player id; "" = enemy/AI/solo) + `ai_controlled`; `to_snapshot()`/
+     `from_snapshot()` build the display-only "ghost" combatants guests render.
+  2. `CombatManager._build_mp_party()` builds the MP party from `PartyManager.members`: local player from
+     `GameManager.player_state`; remote players from their presence `data` via `PlayerState.from_dict` →
+     `Combatant.from_player(ps, owner_id)`.
+  3. `CombatManager._push_snapshot()` writes `game_state.combat = {active, party_count, combatants:[...],
+     turn_owner, log, result, actions:{<pid>:{action,target_index,skill_id,item_id}}}` via
+     `PartyManager.host_set("combat", ...)` on every system signal. `_push_final_rewards()` adds
+     `combat.rewards` once `_apply_results` has computed them.
+  4. **Host** runs the real `CombatSystem` unchanged. `CombatScene.setup_for_host()` binds to it and only
+     shows the action menu when `c.owner_id == local_owner_id`; otherwise `CombatManager._relay_remote_turn`
+     polls `game_state.combat.actions[c.owner_id]` (`_await_remote_action`, 30s timeout → auto-Defend; 3
+     consecutive timeouts via `_note_timeout` → `ai_controlled`, AI attacks lowest-HP enemy). A stale
+     heartbeat (`_is_member_offline`) takes over immediately.
+  5. **Guests** never run a `CombatSystem` — `CombatScene.setup_viewer()` rebuilds ghost combatants from
+     `PartyManager.combat_state_changed` snapshots each tick and only shows the menu when
+     `turn_owner == local_id`; submitting calls `PartyManager.submit_combat_action()` (writes
+     `actions[local_id]`). Targets are enemy **index** into the combatants tail.
+  6. Encounter trigger relay: `EnemyEncounter._run()` and `ExploreScene._run_encounter()` (boss POIs) call
+     `Combat.run_shared_encounter()` directly if host, or `PartyManager.request_encounter()` + await
+     `Combat.encounter_finished` if guest. Host's `_maybe_start_requested_encounter()` (on
+     `combat_state_changed`) picks up `combat.requested` and starts it. Guests open/close the viewer via
+     `CombatManager._on_remote_combat_changed()` watching `combat.active`.
+  7. Rewards: host applies XP/Bytes to its own `GameManager.player_state` exactly like solo (single pool,
+     not per-player split); guests apply the same `combat.rewards` numbers to their own player_state in
+     `_apply_guest_rewards()` once their viewer closes. Boss firewall drop still shared via existing
+     `host_set("firewall_power")` in `ExploreScene._on_firewall_changed`.
+  8. Boss HP scales with party size: `_build_mp_enemies()` multiplies a boss's max_hp by
+     `1 + 0.6·(n−1)` for `n` > 1; non-bosses unaffected.
+  - **Known race (accepted, same class as the Layer-1 presence note):** `host_set` pushes the *entire*
+    local `game_state` snapshot; a guest's own presence heartbeat poll landing between a host push and the
+    guest's read could clobber/be-clobbered. Small lobbies, low likelihood — revisit if it shows up live.
+  - **Still needs:** the live 2-window playtest (feel of turn pacing, UI layout under real latency) — only
+    a single-instance simulated-guest test has run so far.
 - **Testing co-op:** run two instances on this machine (local Supabase binds 0.0.0.0). Host Co-op → code;
-  Join Co-op → enter code. Verifiable solo: connectivity, lobby, presence-data. Needs 2-client playtest:
-  live avatars + combat.
+  Join Co-op → enter code. Verifiable solo: connectivity, lobby, presence-data, shared combat (single
+  instance, simulated guest). Needs 2-client playtest: live avatars + combat feel.
 - **Reality:** local Supabase only reaches this machine; real co-op needs a hosted instance + rebuild.
 
 **Milestone 8 — DONE (polish pass; multiplayer M6 + mods M7 still pending).** All regression suites

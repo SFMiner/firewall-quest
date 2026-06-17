@@ -24,7 +24,22 @@ func _on_body_entered(body: Node) -> void:
 
 
 func _run() -> void:
-	var result: String = await Combat.run_encounter(enemy_ids)
+	if PartyManager.is_multiplayer and not PartyManager.is_host:
+		# Guests don't run combat themselves — ask the host to start it, then
+		# wait for CombatManager to report the result once its viewer closes.
+		await PartyManager.request_encounter(enemy_ids)
+		var result: String = await Combat.encounter_finished
+		resolved.emit(result)
+		if result == "victory" or result == "fled":
+			queue_free()
+		else:
+			_triggered = false
+		return
+	var result: String
+	if PartyManager.is_multiplayer:
+		result = await Combat.run_shared_encounter(enemy_ids)
+	else:
+		result = await Combat.run_encounter(enemy_ids)
 	resolved.emit(result)
 	if result == "victory" or result == "fled":
 		queue_free()

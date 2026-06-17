@@ -27,7 +27,7 @@ func _run() -> void:
 	if PartyManager.is_multiplayer and not PartyManager.is_host:
 		# Guests don't run combat themselves — ask the host to start it, then
 		# wait for CombatManager to report the result once its viewer closes.
-		await PartyManager.request_encounter(enemy_ids)
+		await PartyManager.request_encounter(enemy_ids, GameManager.current_zone)
 		var result: String = await Combat.encounter_finished
 		resolved.emit(result)
 		if result == "victory" or result == "fled":
@@ -37,7 +37,7 @@ func _run() -> void:
 		return
 	var result: String
 	if PartyManager.is_multiplayer:
-		result = await Combat.run_shared_encounter(enemy_ids)
+		result = await Combat.run_shared_encounter(enemy_ids, GameManager.current_zone)
 	else:
 		result = await Combat.run_encounter(enemy_ids)
 	resolved.emit(result)

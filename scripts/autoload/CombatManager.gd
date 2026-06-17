@@ -21,6 +21,7 @@ var last_rewards: Dictionary = {}
 
 # === Shared-party combat (host relay state) ===
 var _mp_turn_owner: String = ""
+var _mp_zone_id: String = ""
 var _mp_log_tail: Array[String] = []
 var _remote_timeouts: Dictionary = {}  # owner_id -> consecutive timeout count
 
@@ -60,10 +61,13 @@ func run_encounter(enemy_ids: Array) -> String:
 
 
 ## Shared-party combat (host-authoritative). Builds the MP party from
-## PartyManager.members, runs the real CombatSystem locally, relays remote
-## players' turns by polling the shared `combat.actions` blob, and pushes a
-## display snapshot to the room on every change so guests can render it.
-func run_shared_encounter(enemy_ids: Array) -> String:
+## PartyManager.members **filtered to `zone_id`** (only players actually
+## standing where the fight happened join it), runs the real CombatSystem
+## locally, relays remote players' turns by polling the shared `combat.actions`
+## blob, and pushes a display snapshot to the room on every change so guests
+## can render it. If the host itself isn't in `zone_id`, it runs the fight
+## headlessly — no full-screen takeover on a screen that isn't part of it.
+func run_shared_encounter(enemy_ids: Array, zone_id: String) -> String:
 	if _active:
 		return "busy"
 	if not PartyManager.is_host:
@@ -71,34 +75,43 @@ func run_shared_encounter(enemy_ids: Array) -> String:
 	_active = true
 	_remote_timeouts.clear()
 	_mp_log_tail.clear()
-	GameManager.ui_blocking = true
-	var party: Array[Combatant] = _build_mp_party()
+	_mp_zone_id = zone_id
+	var party: Array[Combatant] = _build_mp_party(zone_id)
 	var enemies: Array[Combatant] = _build_mp_enemies(enemy_ids, party.size())
-	var layer: CanvasLayer = CanvasLayer.new()
-	layer.layer = 5
-	get_tree().root.add_child(layer)
 	var system: CombatSystem = CombatSystem.new()
 	add_child(system)
-	var scene: CombatScene = COMBAT_SCENE.instantiate()
-	layer.add_child(scene)
-	scene.setup_for_host(party, enemies, system, PartyManager.local_id)
 	_wire_relay(system)
 	_wire_snapshot_push(system)
+	var show_locally: bool = zone_id == GameManager.current_zone
+	var layer: CanvasLayer = null
+	var scene: CombatScene = null
+	if show_locally:
+		GameManager.ui_blocking = true
+		layer = CanvasLayer.new()
+		layer.layer = 5
+		get_tree().root.add_child(layer)
+		scene = COMBAT_SCENE.instantiate()
+		layer.add_child(scene)
+		scene.setup_for_host(party, enemies, system, PartyManager.local_id)
 	system.start(party, enemies)
-	var result: String = await scene.finished
+	var result: String = await (scene.finished if show_locally else system.combat_ended)
 	system.queue_free()
-	layer.queue_free()
+	if layer != null:
+		layer.queue_free()
 	_apply_results(result, enemies)
 	await _push_final_rewards()
-	GameManager.ui_blocking = false
+	if show_locally:
+		GameManager.ui_blocking = false
 	_active = false
 	encounter_finished.emit(result)
 	return result
 
 
-func _build_mp_party() -> Array[Combatant]:
+func _build_mp_party(zone_id: String) -> Array[Combatant]:
 	var arr: Array[Combatant] = []
 	for m: Dictionary in PartyManager.members:
+		if m.get("zone", "") != zone_id:
+			continue
 		var owner_id: String = m.get("id", "")
 		var ps: PlayerState
 		if owner_id == PartyManager.local_id and GameManager.player_state != null:
@@ -219,6 +232,7 @@ func _push_snapshot(system: CombatSystem) -> void:
 		combatants.append(c.to_snapshot())
 	var snapshot: Dictionary = {
 		"active": system.result == "ongoing",
+		"zone": _mp_zone_id,
 		"party_count": system.party.size(),
 		"combatants": combatants,
 		"turn_owner": _mp_turn_owner,
@@ -248,9 +262,10 @@ func _maybe_start_requested_encounter() -> void:
 	if req.is_empty():
 		return
 	var enemy_ids: Array = req.get("enemy_ids", [])
+	var zone_id: String = req.get("zone", "")
 	combat.erase("requested")
 	PartyManager.game_state["combat"] = combat
-	run_shared_encounter(enemy_ids)
+	run_shared_encounter(enemy_ids, zone_id)
 
 
 # === Guest: open/close a read-only viewer when the host's combat is active ===
@@ -261,7 +276,7 @@ func _on_remote_combat_changed() -> void:
 	if _viewer_open:
 		return
 	var combat: Dictionary = PartyManager.game_state.get("combat", {})
-	if combat.get("active", false):
+	if combat.get("active", false) and combat.get("zone", "") == GameManager.current_zone:
 		_open_viewer()
 
 

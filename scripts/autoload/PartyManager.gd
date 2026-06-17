@@ -148,8 +148,9 @@ func submit_combat_action(action: Dictionary) -> void:
 
 
 ## Guest: ask the host to start a shared encounter (walked into an EnemyEncounter).
-## The host's CombatManager picks this up on its next poll and clears it.
-func request_encounter(enemy_ids: Array) -> void:
+## The host's CombatManager picks this up on its next poll and clears it. `zone_id`
+## lets the host zone-gate the fight to players actually standing there.
+func request_encounter(enemy_ids: Array, zone_id: String) -> void:
 	if is_host or not is_multiplayer:
 		return
 	var room: Dictionary = await SupabaseManager.get_room(room_code)
@@ -158,7 +159,7 @@ func request_encounter(enemy_ids: Array) -> void:
 	game_state = room.data[0].get("game_state", {})
 	if not game_state.has("combat"):
 		game_state["combat"] = {}
-	game_state["combat"]["requested"] = {"enemy_ids": enemy_ids, "by": local_id, "t": Time.get_unix_time_from_system()}
+	game_state["combat"]["requested"] = {"enemy_ids": enemy_ids, "by": local_id, "zone": zone_id, "t": Time.get_unix_time_from_system()}
 	await SupabaseManager.update_room_state(room_code, game_state)
 
 

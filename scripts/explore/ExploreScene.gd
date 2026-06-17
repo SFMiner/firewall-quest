@@ -98,6 +98,7 @@ func _make_remote_avatar(m: Dictionary) -> Node2D:
 	var node: Node2D = Node2D.new()
 	node.position = m.pos
 	node.set_meta("target", m.pos)
+	node.set_meta("facing", "down")
 	var spr: AnimatedSprite2D = AnimatedSprite2D.new()
 	spr.position = Vector2(0, -18)
 	var frames: SpriteFrames = LPCFrames.build(m.get("class", "fighter"))
@@ -105,6 +106,7 @@ func _make_remote_avatar(m: Dictionary) -> Node2D:
 		spr.sprite_frames = frames
 		spr.play("idle_down")
 	node.add_child(spr)
+	node.set_meta("sprite", spr)
 	var tag: Label = Label.new()
 	tag.text = m.get("name", "Player")
 	tag.position = Vector2(-70, -56)
@@ -146,7 +148,23 @@ func _process(delta: float) -> void:
 		PartyManager.set_local_presence(player.global_position, zone.id)
 		for id: String in _remote_avatars:
 			var av: Node2D = _remote_avatars[id]
+			var to_target: Vector2 = av.get_meta("target", av.position) - av.position
 			av.position = av.position.move_toward(av.get_meta("target", av.position), 140.0 * delta)
+			_update_remote_avatar_animation(av, to_target)
+
+
+# Remote avatars only sync position over the wire — derive walk/idle + facing
+# locally from how far they still have to travel, mirroring Player._play().
+func _update_remote_avatar_animation(av: Node2D, to_target: Vector2) -> void:
+	var spr: AnimatedSprite2D = av.get_meta("sprite", null)
+	if spr == null or spr.sprite_frames == null:
+		return
+	var moving: bool = to_target.length() > 2.0
+	var facing: String = LPCFrames.dir_name(to_target) if moving else av.get_meta("facing", "down")
+	av.set_meta("facing", facing)
+	var anim: String = "%s_%s" % ["walk" if moving else "idle", facing]
+	if spr.sprite_frames.has_animation(anim) and spr.animation != anim:
+		spr.play(anim)
 
 
 func _setup_hud() -> void:
@@ -429,8 +447,8 @@ func _run_encounter(enemy_ids: Array) -> String:
 	if not PartyManager.is_multiplayer:
 		return await Combat.run_encounter(enemy_ids)
 	if PartyManager.is_host:
-		return await Combat.run_shared_encounter(enemy_ids)
-	await PartyManager.request_encounter(enemy_ids)
+		return await Combat.run_shared_encounter(enemy_ids, GameManager.current_zone)
+	await PartyManager.request_encounter(enemy_ids, GameManager.current_zone)
 	return await Combat.encounter_finished
 
 

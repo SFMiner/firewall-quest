@@ -41,6 +41,7 @@ func _run() -> void:
 
 	_test_mp_party_and_scaling()
 	await _test_action_relay_writes(code)
+	_test_viewer_zone_gating()
 	await _test_live_relay(code)
 
 	await PartyManager.leave_room()
@@ -63,11 +64,25 @@ func _test_snapshot_roundtrip() -> void:
 	_check("enemy ghost is_player false for empty owner", not enemy_ghost.is_player)
 
 
-# === Pure logic: MP party building + boss HP scaling ===
+# === Pure logic: MP party building + zone filtering + boss HP scaling ===
 func _test_mp_party_and_scaling() -> void:
-	var party: Array[Combatant] = Combat._build_mp_party()
+	var party: Array[Combatant] = Combat._build_mp_party("zone1")
 	_check("mp party has the simulated guest", party.size() == 1 and party[0].owner_id == "guest_a")
 	_check("mp party combatant is a player", party[0].is_player)
+
+	# Add a second simulated member standing in a different zone — they should
+	# never be pulled into a zone1 fight (and only they should be pulled into one).
+	PartyManager.game_state["players"]["guest_b"] = {
+		"player_name": "Bram", "class": "fighter", "pos": [0, 0], "zone": "zone2",
+		"t": Time.get_unix_time_from_system(),
+	}
+	PartyManager._refresh_members()
+	var zone1_party: Array[Combatant] = Combat._build_mp_party("zone1")
+	_check("cross-zone member excluded from zone1 fight", zone1_party.size() == 1 and zone1_party[0].owner_id == "guest_a")
+	var zone2_party: Array[Combatant] = Combat._build_mp_party("zone2")
+	_check("only the zone2 member joins a zone2 fight", zone2_party.size() == 1 and zone2_party[0].owner_id == "guest_b")
+	PartyManager.game_state["players"].erase("guest_b")
+	PartyManager._refresh_members()
 
 	var boss_def: EnemyDef = DataLoader.get_enemy("vice_principal")
 	var base_hp: int = Combatant.from_enemy(boss_def, GameManager.firewall_power).max_hp
@@ -86,13 +101,14 @@ func _test_action_relay_writes(code: String) -> void:
 	var was_host: bool = PartyManager.is_host
 	PartyManager.is_host = false  # pretend to be a guest just to exercise the write path
 	await PartyManager.submit_combat_action({"action": "attack", "target_index": 0})
-	await PartyManager.request_encounter(["goblin"])
+	await PartyManager.request_encounter(["goblin"], "zone1")
 	PartyManager.is_host = was_host
 	var room: Dictionary = await SupabaseManager.get_room(code)
 	var gs: Dictionary = room.data[0].get("game_state", {})
 	var combat: Dictionary = gs.get("combat", {})
 	_check("submit_combat_action wrote an action", combat.get("actions", {}).has(PartyManager.local_id))
 	_check("request_encounter wrote a request", combat.get("requested", {}).get("enemy_ids", []) == ["goblin"])
+	_check("request_encounter wrote the zone", combat.get("requested", {}).get("zone", "") == "zone1")
 	# Clear both so they don't leak into the live relay test below. Update the
 	# local mirror directly rather than via _poll() — a poll would also rewrite
 	# our own presence slot back into "players", reintroducing the host as a
@@ -105,6 +121,28 @@ func _test_action_relay_writes(code: String) -> void:
 	PartyManager.game_state = gs
 
 
+# === Guest viewer only opens for a fight in the guest's own zone ===
+func _test_viewer_zone_gating() -> void:
+	var was_host: bool = PartyManager.is_host
+	var was_zone: String = GameManager.current_zone
+	PartyManager.is_host = false  # pretend to be a guest so _on_remote_combat_changed considers opening a viewer
+	PartyManager.game_state["combat"] = {"active": true, "zone": "zone2"}
+
+	GameManager.current_zone = "zone1"
+	Combat._on_remote_combat_changed()
+	_check("viewer stays closed for a fight in another zone", not Combat._viewer_open)
+
+	GameManager.current_zone = "zone2"
+	Combat._on_remote_combat_changed()
+	_check("viewer opens for a fight in the guest's own zone", Combat._viewer_open)
+	if Combat._viewer_open:
+		Combat._close_viewer("fled")
+
+	PartyManager.is_host = was_host
+	GameManager.current_zone = was_zone
+	PartyManager.game_state["combat"] = {}
+
+
 # === Live relay: run a real shared encounter; respond to guest_a's turns by
 # writing actions straight to the room (as a second client would), and let
 # PartyManager's normal polling surface them to the host's relay. ===
@@ -113,7 +151,8 @@ func _test_live_relay(code: String) -> void:
 	var result: Array[String] = [""]
 	Combat.encounter_finished.connect(_on_test_encounter_finished.bind(finished, result), CONNECT_ONE_SHOT)
 	PartyManager.set_process(true)
-	Combat.run_shared_encounter(["goblin"])
+	GameManager.current_zone = "zone1"  # host stands with guest_a so the visible CombatScene path runs too
+	Combat.run_shared_encounter(["goblin"], "zone1")
 
 	var elapsed: float = 0.0
 	var attacks_sent: int = 0

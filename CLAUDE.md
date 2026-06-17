@@ -87,11 +87,32 @@ five autoload stubs, Dialogue Manager + PANEL balloon, LPC tooling, Main/MainMen
   DISCONNECT_TIMEOUT (6s) = offline. ExploreScene spawns/lerps **remote-player avatars** (LPC sprite +
   name) for others in the same zone, writes local presence each frame, and syncs **shared firewall power**
   (host pushes on change via `host_set`; guests adopt via `world_state_changed` → `GameManager.adopt_firewall_power`).
-- TODO (Layer 2 — full shared party combat, host-authoritative): combatant `owner_id`, serialize combat
-  to `game_state.combat`, host runs the loop + relays remote actions, guests view + submit, 30s timer →
-  Defend → AI, disconnect → AI, boss HP scales with party size.
-- **Testing co-op:** run two instances on this machine (local Supabase binds 0.0.0.0). Verifiable from one
-  instance: connectivity, lobby, presence-data. Needs your 2-client playtest: live avatars + combat feel.
+- **NEXT TASK — Layer 2: full shared party combat (host-authoritative). Not started in code.** Planned
+  architecture (decided with Sean; build as a self-contained module so solo combat stays intact):
+  1. `Combatant.owner_id` (player id; "" = enemy/AI) + `ai_controlled` flag. Solo player = a sentinel
+     owner so its menu still shows.
+  2. Build the MP party from `PartyManager.members`: local player from `GameManager.player_state`; remote
+     players from their presence `data` (full PlayerState dict) via `PlayerState.from_dict` →
+     `Combatant.from_player`, each tagged with `owner_id = member.id`.
+  3. Serialize combat to `game_state.combat` = `{active, enemy_ids, combatants:[{owner,name,sprite,hp,
+     max_hp,mp,max_mp,alive,statuses}], turn_owner, log, result, actions:{<pid>:{action,target_index,
+     skill_id,item_id}}}`. Host writes it (via `PartyManager.host_set("combat", ...)`) on every change.
+  4. **Host** runs the real `CombatSystem`. On `awaiting_action(c)`: if `c.owner_id == local_id` → its own
+     `CombatScene` UI submits; else → poll `game_state.combat.actions[c.owner_id]` (30s timeout →
+     auto-Defend; 3 consecutive timeouts → `ai_controlled`, AI picks: attack lowest-HP enemy / self-heal
+     <30%). Disconnect (heartbeat stale) → same AI takeover.
+  5. **Guests** don't run CombatSystem — a viewer renders `game_state.combat` (reuse CombatScene panel
+     layout, snapshot-driven) and shows the action menu only when `turn_owner == local_id`; submitting
+     writes `actions[local_id]` for the host to consume. Targets are referenced by enemy **index**.
+  6. Encounter trigger relay: when any player hits an `EnemyEncounter`, write a request the host turns
+     into `run_shared_encounter(enemy_ids)`; all clients open the combat view when `combat.active`.
+  7. Rewards: per-player XP/Bytes; boss firewall drop already shared via `host_set("firewall_power")`.
+  8. **Boss HP scales with party size** (e.g. ×(1 + 0.6·(n−1))) so a full party doesn't melt bosses.
+  - Validate from one instance: combat-state serialize/deserialize + the host's remote-action relay with a
+    simulated guest action written to the room. Live feel needs the 2-window playtest.
+- **Testing co-op:** run two instances on this machine (local Supabase binds 0.0.0.0). Host Co-op → code;
+  Join Co-op → enter code. Verifiable solo: connectivity, lobby, presence-data. Needs 2-client playtest:
+  live avatars + combat.
 - **Reality:** local Supabase only reaches this machine; real co-op needs a hosted instance + rebuild.
 
 **Milestone 8 — DONE (polish pass; multiplayer M6 + mods M7 still pending).** All regression suites
@@ -111,6 +132,17 @@ green; menu/HUD/settings/zone art confirmed by screenshot.
   hosts that honor it). Windows → `export/firewall-quest.exe` (gitignored). Build:
   `./Godot_v4.6-stable_win64.exe --headless --path . --export-release "Web" docs/index.html`.
   Dev test scenes are excluded from builds (`scenes/dev/*`, `scripts/dev/*`).
+
+**Playtest fixes (Sean played a full solo run to credits — all fixed & regression-tested):** invisible
+POIs → visible markers + labels + map-edge walls; combat overlay was camera-zoomed → now on its own
+CanvasLayer; shop Buy buttons overflowed off-panel → row layout fixed + inline effect labels + 15
+starting Bytes; toasts unreadable → dark backing + outline; merchant "quest" was hollow → real escort
+(follow + gate dropoff) + quest start/complete toasts; Hall Monitor lure puzzle (stacking/sticking/
+unclear) → single trailing monitor (110px), labeled CHECKPOINTs, progress toasts, encounters paused
+mid-puzzle; talking to Gerald/Not-Kevin now opens the shop; **MP cost felt** (no same-round regen);
+**stun can't perma-lock** (post-recovery immunity); **late-game too easy** → damage floor (≥30% of
+attacker PWR lands through DEF) + ADMIN-9 buffed (HP 120, PWR 13); credits "Return to Title" fixed;
+editable title screen with `assets/ui/splashscreen_background.png`.
 
 **Milestone 5 — DONE (base game complete; MVP = Phases 0+1).** Zones 2–4 + bosses, validated by
 `scenes/dev/M5Test.tscn` (13/13); Counselor survey / ADMIN-9 fight / Hall Monitor puzzle confirmed by

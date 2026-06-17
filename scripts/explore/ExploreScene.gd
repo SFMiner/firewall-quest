@@ -308,7 +308,7 @@ func _build_dungeon() -> void:
 
 
 func _build_castle() -> void:
-	_add_poi(Vector2(300, 360), "bronze_lantern", "The fire-damaged wing")  # Ashvale egg
+	_add_poi(Vector2(300, 360), "bronze_lantern", "The fire-damaged stick... wait.. that's a stick-man.")  # Ashvale egg
 
 
 func _build_server() -> void:

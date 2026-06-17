@@ -64,6 +64,7 @@ layout_mode = 2
 text = "Continue"
 
 [node name="HostButton" type="Button" parent="VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Host Co-op"
 
